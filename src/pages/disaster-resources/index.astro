@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/Section.astro';
+import LinkList from '../../components/LinkList.astro';
+import Callout from '../../components/Callout.astro';
+import siteData from '../../content/site.json';
+
+const page = siteData.pages.disaster;
+---
+
+<BaseLayout title={page.title} description={page.description}>
+  <div class="hero">
+    <h1>{page.hero.heading}</h1>
+    <p>{page.hero.subheading}</p>
+  </div>
+
+  <Callout variant="emergency">
+    <h2>{page.emergency.heading}</h2>
+    <dl class="emergency-list">
+      {page.emergency.items.map((item) => (
+        <>
+          <dt>{item.label}</dt>
+          <dd>{item.description}</dd>
+        </>
+      ))}
+    </dl>
+  </Callout>
+
+  <Section id="national" heading={page.national.heading}>
+    <LinkList links={page.national.links} />
+  </Section>
+
+  <Section id="local" heading={page.local.heading}>
+    <LinkList links={page.local.links} />
+  </Section>
+
+  <Section id="recovery" heading={page.recovery.heading}>
+    <LinkList links={page.recovery.links} />
+  </Section>
+
+  <Callout variant="info">
+    <p><strong>After a disaster:</strong> Document all damage with photos before cleanup. Contact your insurance company as soon as possible. Register with FEMA even if you have insurance — you may qualify for additional assistance.</p>
+  </Callout>
+</BaseLayout>

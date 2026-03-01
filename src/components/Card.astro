@@ -1,0 +1,39 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  icon?: string;
+  title: string;
+  description?: string;
+  bullets?: string[];
+  links?: { label: string; url: string; description?: string }[];
+}
+
+const { icon, title, description, bullets = [], links = [] } = Astro.props;
+---
+
+<div class="card">
+  <div class="card-header">
+    {icon && <Icon name={icon} size={24} />}
+    <h3>{title}</h3>
+  </div>
+  {description && <p class="card-description">{description}</p>}
+  {bullets.length > 0 && (
+    <ul class="card-bullets">
+      {bullets.map((item) => <li>{item}</li>)}
+    </ul>
+  )}
+  {links.length > 0 && (
+    <ul class="card-links">
+      {links.map((link) => (
+        <li>
+          <a href={link.url} rel="noopener noreferrer" target="_blank">
+            {link.label}
+            <Icon name="arrow-up-right" size={14} />
+          </a>
+          {link.description && <span class="link-description">{link.description}</span>}
+        </li>
+      ))}
+    </ul>
+  )}
+</div>

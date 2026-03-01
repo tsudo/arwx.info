@@ -1,0 +1,84 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
+import Card from '../components/Card.astro';
+import LinkList from '../components/LinkList.astro';
+import Callout from '../components/Callout.astro';
+import Icon from '../components/Icon.astro';
+import siteData from '../content/site.json';
+
+const page = siteData.pages.home;
+---
+
+<BaseLayout title={page.title} description={page.description}>
+  <div class="hero">
+    <h1>{page.hero.heading}</h1>
+    <p>{page.hero.subheading}</p>
+  </div>
+
+  <Section id="essentials" heading="The Essentials">
+    <div class="card-grid">
+      {page.essentials.map((item) => (
+        <Card
+          icon={item.icon}
+          title={item.title}
+          description={item.description}
+          bullets={item.bullets}
+          links={item.links}
+        />
+      ))}
+    </div>
+  </Section>
+
+  <Section
+    id="alerts"
+    heading={page.alertsAndApps.heading}
+    description={page.alertsAndApps.description}
+  >
+    <LinkList links={page.alertsAndApps.links} />
+  </Section>
+
+  <Section
+    id="official"
+    heading={page.officialSources.heading}
+    description={page.officialSources.description}
+  >
+    <LinkList links={page.officialSources.links} />
+  </Section>
+
+  <Section id="prep" heading={page.prep101.heading}>
+    {page.prep101.sections.map((section) => (
+      <div class="prep-block">
+        <h3>{section.title}</h3>
+        <ul>
+          {section.items.map((item) => <li>{item}</li>)}
+        </ul>
+      </div>
+    ))}
+  </Section>
+
+  <Section id="advanced" heading={page.advancedTips.heading}>
+    <ul class="tips-list">
+      {page.advancedTips.items.map((item) => <li>{item}</li>)}
+    </ul>
+  </Section>
+
+  <Section id="meteorologists" heading={page.meteorologists.heading} description={page.meteorologists.description}>
+    <div class="people-grid">
+      {page.meteorologists.people.map((person) => (
+        <div class="person-card">
+          <strong>{person.name}</strong>
+          <span class="person-outlet">{person.outlet}</span>
+          <a href={person.url} rel="noopener noreferrer" target="_blank">
+            {person.handle}
+            <Icon name="arrow-up-right" size={14} />
+          </a>
+        </div>
+      ))}
+    </div>
+  </Section>
+
+  <Callout variant="info">
+    <p><strong>Watch vs. Warning:</strong> A <em>Watch</em> means conditions are favorable for severe weather. A <em>Warning</em> means severe weather is occurring or imminent — take action immediately.</p>
+  </Callout>
+</BaseLayout>

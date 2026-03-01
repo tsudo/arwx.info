@@ -1,0 +1,22 @@
+---
+import siteData from '../content/site.json';
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <nav aria-label="Footer navigation">
+      <a href="/">Readiness</a>
+      <a href="/disaster-resources/">Disaster Resources</a>
+    </nav>
+    <div class="footer-meta">
+      <p>
+        <a href={siteData.meta.suggestionsUrl} rel="noopener noreferrer" target="_blank">Suggest a resource</a>
+        &middot;
+        <a href={siteData.meta.repoUrl} rel="noopener noreferrer" target="_blank">GitHub</a>
+      </p>
+      <p class="footer-note">Not affiliated with any government agency. For informational purposes only.</p>
+      <p class="footer-copyright">&copy; {year} ARwx</p>
+    </div>
+  </div>
+</footer>

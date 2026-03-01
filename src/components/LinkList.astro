@@ -1,0 +1,21 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  links: { label: string; url: string; description?: string }[];
+}
+
+const { links } = Astro.props;
+---
+
+<ul class="link-list">
+  {links.map((link) => (
+    <li>
+      <a href={link.url} rel="noopener noreferrer" target="_blank">
+        {link.label}
+        <Icon name="arrow-up-right" size={14} />
+      </a>
+      {link.description && <span class="link-description">{link.description}</span>}
+    </li>
+  ))}
+</ul>
