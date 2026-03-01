@@ -96,6 +96,14 @@ body {
   color: var(--color-text);
   text-decoration: none;
   letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.wordmark-logo {
+  border-radius: 4px;
+  display: block;
 }
 
 .header-inner nav {

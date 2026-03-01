@@ -4,7 +4,10 @@ const currentPath = Astro.url.pathname;
 
 <header class="site-header">
   <div class="header-inner">
-    <a href="/" class="wordmark">ARwx</a>
+    <a href="/" class="wordmark">
+      <img src="/assets/arwx-logo.jpg" alt="ARwx" class="wordmark-logo" width="32" height="32" />
+      ARwx.info
+    </a>
     <nav aria-label="Main navigation">
       <a href="/" class:list={[{ active: currentPath === '/' }]}>Readiness</a>
       <a href="/disaster-resources/" class:list={[{ active: currentPath.startsWith('/disaster-resources') }]}>Disaster Resources</a>
