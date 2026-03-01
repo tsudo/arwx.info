@@ -156,26 +156,15 @@
           "Equip each family member with a whistle for emergency signaling if trapped",
           "Save important documents locally on your phone, accessible offline — don't rely on cloud access during outages",
           "Practice drills regularly to reduce panic and ensure everyone knows what to do",
-          "Learn to read SPC mesoscale discussions and convective outlooks",
-          "Understand radar signatures: hook echoes, debris balls, velocity couplets",
-          "Follow local NWS chat discussions during active weather",
           "Consider a storm shelter or safe room if in a manufactured home or tornado-prone area",
           "Review your insurance coverage annually — standard policies often exclude flood damage"
         ]
       },
       "meteorologists": {
         "heading": "Trusted Meteorologists",
-        "description": "Local meteorologists who provide reliable Arkansas severe weather coverage. Follow for timely updates during active weather.",
-        "people": [
-          { "name": "Todd Yakoubian", "handle": "@prior2prior", "outlet": "THV11 / First Alert", "url": "https://x.com/prior2prior" },
-          { "name": "Pat Walker", "handle": "@prior2prior_Pat", "outlet": "THV11 / First Alert", "url": "https://x.com/prior2prior_Pat" },
-          { "name": "Tom Brannon", "handle": "@prior2prior_Tom", "outlet": "THV11 / First Alert", "url": "https://x.com/prior2prior_Tom" },
-          { "name": "Brett Rains", "handle": "@prior2prior_Brett", "outlet": "THV11 / First Alert", "url": "https://x.com/prior2prior_Brett" },
-          { "name": "James Singletary", "handle": "@prior2prior_James", "outlet": "THV11 / First Alert", "url": "https://x.com/prior2prior_James" },
-          { "name": "Dennis Cavanaugh", "handle": "@prior2prior_Dennis", "outlet": "THV11 / First Alert", "url": "https://x.com/prior2prior_Dennis" },
-          { "name": "Chris Swaim", "handle": "@prior2prior_Chris", "outlet": "THV11 / First Alert", "url": "https://x.com/prior2prior_Chris" },
-          { "name": "Barry Brandt", "handle": "@prior2prior_Barry", "outlet": "THV11 / First Alert", "url": "https://x.com/prior2prior_Barry" }
-        ]
+        "description": "Follow reputable Arkansas meteorologists for timely, reliable severe weather coverage.",
+        "listUrl": "https://x.com/i/lists/43404471",
+        "listLabel": "WXexperts — Curated list of trusted Arkansas meteorologists on X"
       }
     },
     "disaster": {

@@ -497,6 +497,26 @@ main {
   text-decoration: underline;
 }
 
+/* ─── List Link ─── */
+.list-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  color: var(--color-link);
+  text-decoration: none;
+  font-weight: 500;
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.list-link:hover {
+  border-color: var(--color-link);
+  background: var(--color-accent-light);
+  text-decoration: none;
+}
+
 /* ─── Footer ─── */
 .site-footer {
   border-top: 1px solid var(--color-border);

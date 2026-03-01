@@ -102,18 +102,10 @@ const page = siteData.pages.home;
       <h2>{page.meteorologists.heading}</h2>
     </div>
     <p class="section-description">{page.meteorologists.description}</p>
-    <div class="people-grid">
-      {page.meteorologists.people.map((person) => (
-        <div class="person-card">
-          <strong>{person.name}</strong>
-          <span class="person-outlet">{person.outlet}</span>
-          <a href={person.url} rel="noopener noreferrer" target="_blank">
-            {person.handle}
-            <Icon name="arrow-up-right" size={14} />
-          </a>
-        </div>
-      ))}
-    </div>
+    <a href={page.meteorologists.listUrl} class="list-link" rel="noopener noreferrer" target="_blank">
+      <Icon name="arrow-up-right" size={16} />
+      {page.meteorologists.listLabel}
+    </a>
   </Section>
 
   <Callout variant="info">
