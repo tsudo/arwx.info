@@ -1060,6 +1060,16 @@ main {
   font-style: italic;
 }
 
+.footer-attribution {
+  margin-top: var(--space-md);
+  font-weight: 500;
+}
+
+.footer-tagline {
+  margin-top: var(--space-xs);
+  font-style: italic;
+}
+
 .footer-copyright {
   margin-top: var(--space-xs);
 }
