@@ -14,6 +14,14 @@ const page = siteData.pages.home;
   <div class="hero">
     <h1>{page.hero.heading}</h1>
     <p>{page.hero.subheading}</p>
+    <div class="quick-links">
+      {page.quickLinks.map((link) => (
+        <a href={link.url} class="quick-link" rel="noopener noreferrer" target="_blank">
+          <Icon name={link.icon} size={18} />
+          {link.label}
+        </a>
+      ))}
+    </div>
   </div>
 
   <Section id="essentials" heading="The Essentials">
@@ -111,4 +119,32 @@ const page = siteData.pages.home;
   <Callout variant="info">
     <p><strong>Watch vs. Warning:</strong> A <em>Watch</em> means conditions are favorable for severe weather — stay alert. A <em>Warning</em> means severe weather is occurring or imminent — take shelter immediately.</p>
   </Callout>
+
+  <div class="share-section">
+    <p class="share-label">Help others stay prepared — share this page</p>
+    <div class="share-buttons">
+      <a
+        href="https://twitter.com/intent/tweet?text=Arkansas%20severe%20weather%20readiness%20resources&url=https%3A%2F%2Farwx.info&via=araborwx"
+        class="share-btn share-btn-x"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>
+        Share on X
+      </a>
+      <a
+        href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Farwx.info"
+        class="share-btn share-btn-fb"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+        </svg>
+        Share on Facebook
+      </a>
+    </div>
+  </div>
 </BaseLayout>

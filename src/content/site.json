@@ -15,6 +15,12 @@
         "heading": "Arkansas Severe Weather Readiness",
         "subheading": "Essential tools, alerts, and preparedness information for Arkansas residents. Stay informed. Stay safe."
       },
+      "quickLinks": [
+        { "icon": "radar", "label": "RadarScope", "url": "https://www.radarscope.app/" },
+        { "icon": "smartphone", "label": "Hello Weather", "url": "https://helloweather.com/" },
+        { "icon": "radio", "label": "Weather Radio", "url": "https://a.co/d/6sKr92p" },
+        { "icon": "users", "label": "WXexperts List", "url": "https://x.com/i/lists/43404471" }
+      ],
       "essentials": [
         {
           "icon": "radio",
@@ -67,7 +73,7 @@
         "description": "Supplement your weather radio with these mobile tools for real-time alerts and forecasts. Storms and tornadoes can strike at night — having a system that can wake you is critical.",
         "privacyNote": "Be cautious with weather apps — many, including well-known ones, monetize by selling user data. Always read the privacy policy before downloading.",
         "links": [
-          { "label": "Hello Weather", "url": "https://helloweather.com/", "description": "Privacy-friendly weather app with a clean interface (no push alerts — use system notifications)" },
+          { "label": "Hello Weather", "url": "https://helloweather.com/", "description": "Privacy-friendly weather app with a clean interface. Pro ($5/yr) includes push weather notifications." },
           { "label": "FEMA App", "url": "https://www.fema.gov/about/news-multimedia/mobile-products", "description": "Fast mobile alerts, shelter finder, and disaster planning resources" },
           { "label": "Red Cross Emergency App", "url": "https://www.redcross.org/get-help/how-to-prepare-for-emergencies/mobile-apps.html", "description": "Set alert locations for family members; available on iOS and Android" },
           { "label": "Wireless Emergency Alerts (WEA)", "url": "https://www.fcc.gov/consumers/guides/wireless-emergency-alerts-wea", "description": "Free alerts direct to your phone — no app needed. Ensure WEA is enabled in settings." }
