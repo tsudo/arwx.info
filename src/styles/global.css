@@ -658,6 +658,21 @@ main {
   margin-top: var(--space-xs);
 }
 
+.footer-license {
+  margin-top: var(--space-xs);
+}
+
+.footer-license a {
+  font-weight: 500;
+}
+
+.cc-icon {
+  max-width: 1em;
+  max-height: 1em;
+  margin-left: 0.2em;
+  vertical-align: text-bottom;
+}
+
 /* ─── Focus States ─── */
 a:focus-visible,
 button:focus-visible {
