@@ -27,6 +27,12 @@ import Icon from '../../components/Icon.astro';
       </button>
     </div>
 
+    <div class="quick-locations">
+      <span class="quick-loc-label">Quick:</span>
+      <button type="button" class="quick-loc" data-lat="34.7294" data-lng="-92.2243">Little Rock (KLIT)</button>
+      <button type="button" class="quick-loc" data-lat="36.2819" data-lng="-94.3068">NW Arkansas (KVBT)</button>
+    </div>
+
     <div id="map" class="forecast-map"></div>
 
     <div id="coords-display" class="coords-display" style="display:none;">
@@ -366,11 +372,21 @@ import Icon from '../../components/Icon.astro';
         }
       }
 
-      searchBtn.addEventListener('click', searchAddress);
+      $('search-btn').addEventListener('click', searchAddress);
       addressInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') searchAddress(); });
 
+      // Quick location buttons
+      document.querySelectorAll('.quick-loc').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const lat = parseFloat(btn.dataset.lat);
+          const lng = parseFloat(btn.dataset.lng);
+          setMarker(lat, lng);
+          fetchForecast(lat, lng);
+        });
+      });
+
       // Geolocation
-      locateBtn.addEventListener('click', () => {
+      $('locate-btn').addEventListener('click', () => {
         if (!navigator.geolocation) { showError('Geolocation is not supported by your browser.'); return; }
         clearError();
         loading.style.display = 'flex';
