@@ -1,0 +1,243 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
+---
+
+<BaseLayout
+  title="Point Forecast — ARwx.info"
+  description="Get a detailed NWS forecast for any location. Click the map or search an address to get started."
+>
+  <div class="hero">
+    <h1>Point Forecast</h1>
+    <p>Click the map or search an address to get a detailed NWS forecast for that exact location.</p>
+  </div>
+
+  <div class="forecast-app">
+    <div class="search-bar">
+      <Icon name="map-pin" size={18} />
+      <input
+        type="text"
+        id="address-input"
+        placeholder="Search an address or place name..."
+        autocomplete="off"
+      />
+      <button id="search-btn" type="button">Search</button>
+      <button id="locate-btn" type="button" title="Use my location">
+        <Icon name="radar" size={18} />
+      </button>
+    </div>
+
+    <div id="map" class="forecast-map"></div>
+
+    <div id="coords-display" class="coords-display" style="display:none;">
+      <span id="coords-text"></span>
+      <a id="nws-link" href="#" target="_blank" rel="noopener noreferrer">
+        View on weather.gov <Icon name="arrow-up-right" size={14} />
+      </a>
+    </div>
+
+    <div id="loading" class="forecast-loading" style="display:none;">
+      <div class="spinner"></div>
+      <span>Fetching forecast...</span>
+    </div>
+
+    <div id="error" class="forecast-error" style="display:none;"></div>
+
+    <div id="forecast-result" class="forecast-result" style="display:none;">
+      <div id="forecast-location" class="forecast-location"></div>
+      <div id="forecast-periods" class="forecast-periods"></div>
+    </div>
+  </div>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Arkansas center
+      const DEFAULT_LAT = 34.75;
+      const DEFAULT_LNG = -92.25;
+      const DEFAULT_ZOOM = 7;
+
+      const map = L.map('map').setView([DEFAULT_LAT, DEFAULT_LNG], DEFAULT_ZOOM);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19
+      }).addTo(map);
+
+      let marker = null;
+
+      const addressInput = document.getElementById('address-input');
+      const searchBtn = document.getElementById('search-btn');
+      const locateBtn = document.getElementById('locate-btn');
+      const coordsDisplay = document.getElementById('coords-display');
+      const coordsText = document.getElementById('coords-text');
+      const nwsLink = document.getElementById('nws-link');
+      const loading = document.getElementById('loading');
+      const errorDiv = document.getElementById('error');
+      const forecastResult = document.getElementById('forecast-result');
+      const forecastLocation = document.getElementById('forecast-location');
+      const forecastPeriods = document.getElementById('forecast-periods');
+
+      function setMarker(lat, lng) {
+        if (marker) {
+          marker.setLatLng([lat, lng]);
+        } else {
+          marker = L.marker([lat, lng]).addTo(map);
+        }
+        map.setView([lat, lng], Math.max(map.getZoom(), 10));
+        coordsText.textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        nwsLink.href = `https://forecast.weather.gov/MapClick.php?lat=${lat}&lon=${lng}`;
+        coordsDisplay.style.display = 'flex';
+      }
+
+      function showError(msg) {
+        errorDiv.textContent = msg;
+        errorDiv.style.display = 'block';
+        forecastResult.style.display = 'none';
+        loading.style.display = 'none';
+      }
+
+      function clearError() {
+        errorDiv.style.display = 'none';
+      }
+
+      async function fetchForecast(lat, lng) {
+        clearError();
+        forecastResult.style.display = 'none';
+        loading.style.display = 'flex';
+
+        try {
+          // Step 1: Get the forecast endpoint for this point
+          const pointRes = await fetch(
+            `https://api.weather.gov/points/${lat.toFixed(4)},${lng.toFixed(4)}`,
+            { headers: { 'User-Agent': 'arwx.info forecast tool' } }
+          );
+
+          if (!pointRes.ok) {
+            if (pointRes.status === 404) {
+              showError('This location is outside NWS coverage (US only).');
+            } else {
+              showError(`NWS API error (${pointRes.status}). Try again.`);
+            }
+            return;
+          }
+
+          const pointData = await pointRes.json();
+          const forecastUrl = pointData.properties.forecast;
+          const locationName = pointData.properties.relativeLocation?.properties;
+
+          // Step 2: Fetch the forecast
+          const forecastRes = await fetch(forecastUrl, {
+            headers: { 'User-Agent': 'arwx.info forecast tool' }
+          });
+
+          if (!forecastRes.ok) {
+            showError(`Could not fetch forecast (${forecastRes.status}). Try again.`);
+            return;
+          }
+
+          const forecastData = await forecastRes.json();
+          const periods = forecastData.properties.periods;
+
+          // Render location
+          if (locationName) {
+            forecastLocation.innerHTML =
+              `<h2>Forecast for ${locationName.city}, ${locationName.state}</h2>` +
+              `<p class="forecast-meta">Updated: ${new Date(forecastData.properties.updated).toLocaleString()}</p>`;
+          } else {
+            forecastLocation.innerHTML =
+              `<h2>Forecast</h2>` +
+              `<p class="forecast-meta">Updated: ${new Date(forecastData.properties.updated).toLocaleString()}</p>`;
+          }
+
+          // Render periods
+          forecastPeriods.innerHTML = periods.map(period => `
+            <div class="forecast-period ${period.isDaytime ? 'period-day' : 'period-night'}">
+              <div class="period-header">
+                <img src="${period.icon}" alt="${period.shortForecast}" width="48" height="48" loading="lazy" />
+                <div>
+                  <strong class="period-name">${period.name}</strong>
+                  <span class="period-temp">${period.temperature}&deg;${period.temperatureUnit}</span>
+                </div>
+              </div>
+              <p class="period-detail">${period.detailedForecast}</p>
+              ${period.windSpeed ? `<p class="period-wind">Wind: ${period.windSpeed} ${period.windDirection}</p>` : ''}
+            </div>
+          `).join('');
+
+          loading.style.display = 'none';
+          forecastResult.style.display = 'block';
+
+        } catch (err) {
+          showError('Network error. Check your connection and try again.');
+        }
+      }
+
+      // Map click
+      map.on('click', (e) => {
+        const { lat, lng } = e.latlng;
+        setMarker(lat, lng);
+        fetchForecast(lat, lng);
+      });
+
+      // Address search via Nominatim
+      async function searchAddress() {
+        const query = addressInput.value.trim();
+        if (!query) return;
+
+        clearError();
+        loading.style.display = 'flex';
+        forecastResult.style.display = 'none';
+
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=us`,
+            { headers: { 'User-Agent': 'arwx.info forecast tool' } }
+          );
+          const results = await res.json();
+
+          if (!results.length) {
+            showError('Location not found. Try a different search.');
+            return;
+          }
+
+          const lat = parseFloat(results[0].lat);
+          const lng = parseFloat(results[0].lon);
+          setMarker(lat, lng);
+          fetchForecast(lat, lng);
+        } catch (err) {
+          showError('Search failed. Check your connection and try again.');
+        }
+      }
+
+      searchBtn.addEventListener('click', searchAddress);
+      addressInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') searchAddress();
+      });
+
+      // Geolocation
+      locateBtn.addEventListener('click', () => {
+        if (!navigator.geolocation) {
+          showError('Geolocation is not supported by your browser.');
+          return;
+        }
+        clearError();
+        loading.style.display = 'flex';
+
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            setMarker(lat, lng);
+            fetchForecast(lat, lng);
+          },
+          () => {
+            showError('Could not get your location. Check browser permissions.');
+          },
+          { timeout: 10000 }
+        );
+      });
+    });
+  </script>
+</BaseLayout>

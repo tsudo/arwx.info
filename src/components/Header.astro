@@ -10,6 +10,7 @@ const currentPath = Astro.url.pathname;
     </a>
     <nav aria-label="Main navigation">
       <a href="/" class:list={[{ active: currentPath === '/' }]}>Readiness</a>
+      <a href="/forecast/" class:list={[{ active: currentPath.startsWith('/forecast') }]}>Forecast</a>
       <a href="/disaster-resources/" class:list={[{ active: currentPath.startsWith('/disaster-resources') }]}>Disaster Resources</a>
     </nav>
     <a href="https://x.com/arwx" class="social-link" aria-label="Follow ARwx on X" rel="noopener noreferrer" target="_blank">
