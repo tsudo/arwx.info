@@ -38,14 +38,41 @@ import Icon from '../../components/Icon.astro';
 
     <div id="loading" class="forecast-loading" style="display:none;">
       <div class="spinner"></div>
-      <span>Fetching forecast...</span>
+      <span>Fetching forecast from the National Weather Service...</span>
     </div>
 
     <div id="error" class="forecast-error" style="display:none;"></div>
 
     <div id="forecast-result" class="forecast-result" style="display:none;">
-      <div id="forecast-location" class="forecast-location"></div>
+      <!-- Point Forecast Header -->
+      <div id="point-header" class="point-header"></div>
+
+      <!-- Current Conditions -->
+      <div id="current-conditions" class="current-conditions" style="display:none;"></div>
+
+      <!-- Copy Forecast -->
+      <div class="forecast-actions">
+        <button id="copy-forecast-btn" type="button" class="copy-btn">
+          <Icon name="clipboard" size={16} />
+          Copy text forecast
+        </button>
+        <span id="copy-confirm" class="copy-confirm" style="display:none;">Copied!</span>
+      </div>
+
+      <!-- Forecast Periods -->
       <div id="forecast-periods" class="forecast-periods"></div>
+
+      <!-- NWS Attribution -->
+      <div class="nws-attribution">
+        <p>
+          Forecast data provided by the
+          <a href="https://www.weather.gov/" rel="noopener noreferrer" target="_blank">National Weather Service</a>.
+          We &hearts; <a id="nws-office-link" href="https://www.weather.gov/lzk/" rel="noopener noreferrer" target="_blank">NWS <span id="nws-office-id">LZK</span></a>.
+        </p>
+        <p class="nws-attribution-sub">
+          Data sourced from <a href="https://www.weather.gov/documentation/services-web-api" rel="noopener noreferrer" target="_blank">api.weather.gov</a> — free, public, no tracking.
+        </p>
+      </div>
     </div>
   </div>
 
@@ -54,10 +81,10 @@ import Icon from '../../components/Icon.astro';
 
   <script is:inline>
     document.addEventListener('DOMContentLoaded', () => {
-      // Arkansas center
       const DEFAULT_LAT = 34.75;
       const DEFAULT_LNG = -92.25;
       const DEFAULT_ZOOM = 7;
+      const API_HEADERS = { 'User-Agent': 'arwx.info forecast tool (https://arwx.info)' };
 
       const map = L.map('map').setView([DEFAULT_LAT, DEFAULT_LNG], DEFAULT_ZOOM);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -66,29 +93,21 @@ import Icon from '../../components/Icon.astro';
       }).addTo(map);
 
       let marker = null;
+      let lastTextForecast = '';
 
-      const addressInput = document.getElementById('address-input');
-      const searchBtn = document.getElementById('search-btn');
-      const locateBtn = document.getElementById('locate-btn');
-      const coordsDisplay = document.getElementById('coords-display');
-      const coordsText = document.getElementById('coords-text');
-      const nwsLink = document.getElementById('nws-link');
-      const loading = document.getElementById('loading');
-      const errorDiv = document.getElementById('error');
-      const forecastResult = document.getElementById('forecast-result');
-      const forecastLocation = document.getElementById('forecast-location');
-      const forecastPeriods = document.getElementById('forecast-periods');
+      const $ = (id) => document.getElementById(id);
+      const addressInput = $('address-input');
+      const loading = $('loading');
+      const errorDiv = $('error');
+      const forecastResult = $('forecast-result');
 
       function setMarker(lat, lng) {
-        if (marker) {
-          marker.setLatLng([lat, lng]);
-        } else {
-          marker = L.marker([lat, lng]).addTo(map);
-        }
+        if (marker) marker.setLatLng([lat, lng]);
+        else marker = L.marker([lat, lng]).addTo(map);
         map.setView([lat, lng], Math.max(map.getZoom(), 10));
-        coordsText.textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-        nwsLink.href = `https://forecast.weather.gov/MapClick.php?lat=${lat}&lon=${lng}`;
-        coordsDisplay.style.display = 'flex';
+        $('coords-text').textContent = `${lat.toFixed(4)}°N, ${Math.abs(lng).toFixed(4)}°W`;
+        $('nws-link').href = `https://forecast.weather.gov/MapClick.php?lat=${lat}&lon=${lng}`;
+        $('coords-display').style.display = 'flex';
       }
 
       function showError(msg) {
@@ -98,39 +117,67 @@ import Icon from '../../components/Icon.astro';
         loading.style.display = 'none';
       }
 
-      function clearError() {
-        errorDiv.style.display = 'none';
+      function clearError() { errorDiv.style.display = 'none'; }
+
+      function cToF(c) { return c !== null ? Math.round(c * 9/5 + 32) : null; }
+      function metersToFeet(m) { return m !== null ? Math.round(m * 3.28084) : null; }
+      function mpsToMph(mps) { return mps !== null ? Math.round(mps * 2.237) : null; }
+      function metersToMiles(m) { return m !== null ? (m / 1609.344).toFixed(1) : null; }
+      function pascalsToInHg(pa) { return pa !== null ? (pa / 3386.39).toFixed(2) : null; }
+
+      function formatTime(isoStr) {
+        if (!isoStr) return null;
+        const d = new Date(isoStr);
+        return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
       }
+
+      // NWS office lookup
+      const officeNames = {
+        LZK: 'Little Rock', TSA: 'Tulsa', MEG: 'Memphis', SHV: 'Shreveport',
+        LMK: 'Louisville', OHX: 'Nashville', JAN: 'Jackson', SGF: 'Springfield',
+        OUN: 'Norman', FWD: 'Fort Worth', HUN: 'Huntsville', PAH: 'Paducah'
+      };
 
       async function fetchForecast(lat, lng) {
         clearError();
         forecastResult.style.display = 'none';
         loading.style.display = 'flex';
+        lastTextForecast = '';
 
         try {
-          // Step 1: Get the forecast endpoint for this point
+          // Step 1: Point metadata
           const pointRes = await fetch(
             `https://api.weather.gov/points/${lat.toFixed(4)},${lng.toFixed(4)}`,
-            { headers: { 'User-Agent': 'arwx.info forecast tool' } }
+            { headers: API_HEADERS }
           );
 
           if (!pointRes.ok) {
-            if (pointRes.status === 404) {
-              showError('This location is outside NWS coverage (US only).');
-            } else {
-              showError(`NWS API error (${pointRes.status}). Try again.`);
-            }
+            showError(pointRes.status === 404
+              ? 'This location is outside NWS coverage (US only).'
+              : `NWS API error (${pointRes.status}). Try again.`);
             return;
           }
 
           const pointData = await pointRes.json();
-          const forecastUrl = pointData.properties.forecast;
-          const locationName = pointData.properties.relativeLocation?.properties;
+          const props = pointData.properties;
+          const forecastUrl = props.forecast;
+          const locationName = props.relativeLocation?.properties;
+          const officeId = props.cwa;
+          const radarStation = props.radarStation;
+          const astro = props.astronomicalData;
 
-          // Step 2: Fetch the forecast
-          const forecastRes = await fetch(forecastUrl, {
-            headers: { 'User-Agent': 'arwx.info forecast tool' }
-          });
+          // Update NWS office attribution
+          $('nws-office-id').textContent = officeId;
+          const officeName = officeNames[officeId] || officeId;
+          $('nws-office-link').href = `https://www.weather.gov/${officeId.toLowerCase()}/`;
+          $('nws-office-link').innerHTML = `NWS ${officeName} (${officeId})`;
+
+          // Step 2: Fetch forecast + elevation + current conditions in parallel
+          const [forecastRes, gridRes, stationsRes] = await Promise.all([
+            fetch(forecastUrl, { headers: API_HEADERS }),
+            fetch(props.forecastGridData, { headers: API_HEADERS }).catch(() => null),
+            fetch(props.observationStations, { headers: API_HEADERS }).catch(() => null)
+          ]);
 
           if (!forecastRes.ok) {
             showError(`Could not fetch forecast (${forecastRes.status}). Try again.`);
@@ -140,29 +187,120 @@ import Icon from '../../components/Icon.astro';
           const forecastData = await forecastRes.json();
           const periods = forecastData.properties.periods;
 
-          // Render location
-          if (locationName) {
-            forecastLocation.innerHTML =
-              `<h2>Forecast for ${locationName.city}, ${locationName.state}</h2>` +
-              `<p class="forecast-meta">Updated: ${new Date(forecastData.properties.updated).toLocaleString()}</p>`;
-          } else {
-            forecastLocation.innerHTML =
-              `<h2>Forecast</h2>` +
-              `<p class="forecast-meta">Updated: ${new Date(forecastData.properties.updated).toLocaleString()}</p>`;
+          // Get elevation from grid data
+          let elevationFt = null;
+          if (gridRes && gridRes.ok) {
+            const gridData = await gridRes.json();
+            const elevM = gridData.properties?.elevation?.value;
+            if (elevM !== null && elevM !== undefined) {
+              elevationFt = metersToFeet(elevM);
+            }
           }
 
+          // Render point header (NWS-style)
+          const cityState = locationName ? `${locationName.city}, ${locationName.state}` : 'Selected Location';
+          const updated = new Date(forecastData.properties.updated);
+          const validStart = periods[0]?.startTime ? new Date(periods[0].startTime) : null;
+          const validEnd = periods[periods.length - 1]?.endTime ? new Date(periods[periods.length - 1].endTime) : null;
+
+          let headerHtml = `
+            <h2>Point Forecast: ${cityState}</h2>
+            <div class="point-meta">
+              <span>${lat.toFixed(2)}°N ${Math.abs(lng).toFixed(2)}°W</span>
+              ${elevationFt !== null ? `<span>Elev. ${elevationFt} ft</span>` : ''}
+              ${radarStation ? `<span>Radar: ${radarStation}</span>` : ''}
+            </div>
+            <div class="point-meta">
+              <span>Last Update: ${updated.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })}</span>
+              <span>Office: <a href="https://www.weather.gov/${officeId.toLowerCase()}/" target="_blank" rel="noopener noreferrer">NWS ${officeName}</a></span>
+            </div>`;
+
+          if (astro) {
+            const sunrise = formatTime(astro.sunrise);
+            const sunset = formatTime(astro.sunset);
+            if (sunrise && sunset) {
+              headerHtml += `<div class="point-meta"><span>Sunrise: ${sunrise}</span><span>Sunset: ${sunset}</span></div>`;
+            }
+          }
+
+          $('point-header').innerHTML = headerHtml;
+
+          // Fetch current conditions from nearest station
+          const conditionsEl = $('current-conditions');
+          conditionsEl.style.display = 'none';
+
+          if (stationsRes && stationsRes.ok) {
+            try {
+              const stationsData = await stationsRes.json();
+              const stationUrl = stationsData.features?.[0]?.id;
+              if (stationUrl) {
+                const obsRes = await fetch(`${stationUrl}/observations/latest`, { headers: API_HEADERS });
+                if (obsRes.ok) {
+                  const obsData = await obsRes.json();
+                  const obs = obsData.properties;
+                  const stationName = stationsData.features[0].properties?.name || 'Nearest Station';
+
+                  const tempF = cToF(obs.temperature?.value);
+                  const dewF = cToF(obs.dewpoint?.value);
+                  const humidity = obs.relativeHumidity?.value !== null ? Math.round(obs.relativeHumidity.value) : null;
+                  const windMph = mpsToMph(obs.windSpeed?.value);
+                  const windDir = obs.windDirection?.value;
+                  const visMi = metersToMiles(obs.visibility?.value);
+                  const pressInHg = pascalsToInHg(obs.barometricPressure?.value);
+                  const desc = obs.textDescription;
+                  const obsTime = obs.timestamp ? new Date(obs.timestamp) : null;
+
+                  // Wind direction to cardinal
+                  const cardinals = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+                  const windCard = windDir !== null ? cardinals[Math.round(windDir / 22.5) % 16] : '';
+                  const windStr = windMph !== null ? (windMph === 0 ? 'Calm' : `${windCard} ${windMph} mph`) : null;
+
+                  let condHtml = `<h3>Current Conditions — ${stationName}</h3><div class="conditions-grid">`;
+                  if (desc) condHtml += `<div class="cond-item"><span class="cond-label">Conditions</span><span class="cond-value">${desc}</span></div>`;
+                  if (tempF !== null) condHtml += `<div class="cond-item"><span class="cond-label">Temperature</span><span class="cond-value cond-temp">${tempF}°F</span></div>`;
+                  if (dewF !== null) condHtml += `<div class="cond-item"><span class="cond-label">Dewpoint</span><span class="cond-value">${dewF}°F</span></div>`;
+                  if (humidity !== null) condHtml += `<div class="cond-item"><span class="cond-label">Humidity</span><span class="cond-value">${humidity}%</span></div>`;
+                  if (windStr) condHtml += `<div class="cond-item"><span class="cond-label">Wind</span><span class="cond-value">${windStr}</span></div>`;
+                  if (visMi !== null) condHtml += `<div class="cond-item"><span class="cond-label">Visibility</span><span class="cond-value">${visMi} mi</span></div>`;
+                  if (pressInHg !== null) condHtml += `<div class="cond-item"><span class="cond-label">Barometer</span><span class="cond-value">${pressInHg} inHg</span></div>`;
+                  condHtml += '</div>';
+                  if (obsTime) condHtml += `<p class="conditions-time">Observed: ${obsTime.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })}</p>`;
+
+                  conditionsEl.innerHTML = condHtml;
+                  conditionsEl.style.display = 'block';
+                }
+              }
+            } catch (e) {
+              // Non-critical — just skip current conditions
+            }
+          }
+
+          // Build text forecast for copying
+          let textParts = [`Point Forecast: ${cityState}`];
+          textParts.push(`${lat.toFixed(2)}°N ${Math.abs(lng).toFixed(2)}°W${elevationFt !== null ? ` (Elev. ${elevationFt} ft)` : ''}`);
+          textParts.push(`Last Update: ${updated.toLocaleString()}`);
+          textParts.push('');
+          periods.forEach(p => {
+            textParts.push(`${p.name}: ${p.detailedForecast}`);
+          });
+          textParts.push('');
+          textParts.push('Source: National Weather Service (weather.gov)');
+          textParts.push('Via: arwx.info/forecast');
+          lastTextForecast = textParts.join('\n');
+
           // Render periods
-          forecastPeriods.innerHTML = periods.map(period => `
+          $('forecast-periods').innerHTML = periods.map(period => `
             <div class="forecast-period ${period.isDaytime ? 'period-day' : 'period-night'}">
               <div class="period-header">
                 <img src="${period.icon}" alt="${period.shortForecast}" width="48" height="48" loading="lazy" />
                 <div>
                   <strong class="period-name">${period.name}</strong>
-                  <span class="period-temp">${period.temperature}&deg;${period.temperatureUnit}</span>
+                  <span class="period-temp">${period.temperature}°${period.temperatureUnit}</span>
+                  <span class="period-short">${period.shortForecast}</span>
                 </div>
               </div>
               <p class="period-detail">${period.detailedForecast}</p>
-              ${period.windSpeed ? `<p class="period-wind">Wind: ${period.windSpeed} ${period.windDirection}</p>` : ''}
+              ${period.windSpeed ? `<p class="period-wind">Wind: ${period.windSpeed} ${period.windDirection}${period.probabilityOfPrecipitation?.value ? ` · Precip: ${period.probabilityOfPrecipitation.value}%` : ''}</p>` : ''}
             </div>
           `).join('');
 
@@ -174,18 +312,40 @@ import Icon from '../../components/Icon.astro';
         }
       }
 
+      // Copy text forecast
+      $('copy-forecast-btn').addEventListener('click', async () => {
+        if (!lastTextForecast) return;
+        try {
+          await navigator.clipboard.writeText(lastTextForecast);
+          const confirm = $('copy-confirm');
+          confirm.style.display = 'inline';
+          setTimeout(() => { confirm.style.display = 'none'; }, 2000);
+        } catch (e) {
+          // Fallback for older browsers
+          const ta = document.createElement('textarea');
+          ta.value = lastTextForecast;
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          const confirm = $('copy-confirm');
+          confirm.style.display = 'inline';
+          setTimeout(() => { confirm.style.display = 'none'; }, 2000);
+        }
+      });
+
       // Map click
       map.on('click', (e) => {
-        const { lat, lng } = e.latlng;
-        setMarker(lat, lng);
-        fetchForecast(lat, lng);
+        setMarker(e.latlng.lat, e.latlng.lng);
+        fetchForecast(e.latlng.lat, e.latlng.lng);
       });
 
       // Address search via Nominatim
       async function searchAddress() {
         const query = addressInput.value.trim();
         if (!query) return;
-
         clearError();
         loading.style.display = 'flex';
         forecastResult.style.display = 'none';
@@ -193,15 +353,10 @@ import Icon from '../../components/Icon.astro';
         try {
           const res = await fetch(
             `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=us`,
-            { headers: { 'User-Agent': 'arwx.info forecast tool' } }
+            { headers: API_HEADERS }
           );
           const results = await res.json();
-
-          if (!results.length) {
-            showError('Location not found. Try a different search.');
-            return;
-          }
-
+          if (!results.length) { showError('Location not found. Try a different search.'); return; }
           const lat = parseFloat(results[0].lat);
           const lng = parseFloat(results[0].lon);
           setMarker(lat, lng);
@@ -212,29 +367,16 @@ import Icon from '../../components/Icon.astro';
       }
 
       searchBtn.addEventListener('click', searchAddress);
-      addressInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') searchAddress();
-      });
+      addressInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') searchAddress(); });
 
       // Geolocation
       locateBtn.addEventListener('click', () => {
-        if (!navigator.geolocation) {
-          showError('Geolocation is not supported by your browser.');
-          return;
-        }
+        if (!navigator.geolocation) { showError('Geolocation is not supported by your browser.'); return; }
         clearError();
         loading.style.display = 'flex';
-
         navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
-            setMarker(lat, lng);
-            fetchForecast(lat, lng);
-          },
-          () => {
-            showError('Could not get your location. Check browser permissions.');
-          },
+          (pos) => { setMarker(pos.coords.latitude, pos.coords.longitude); fetchForecast(pos.coords.latitude, pos.coords.longitude); },
+          () => { showError('Could not get your location. Check browser permissions.'); },
           { timeout: 10000 }
         );
       });
