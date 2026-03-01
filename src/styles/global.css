@@ -179,6 +179,22 @@ main {
   margin-bottom: var(--space-lg);
 }
 
+.section-heading-with-icon {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.section-heading-with-icon svg {
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.section-heading-with-icon h2 {
+  margin-bottom: 0;
+}
+
 /* ─── Cards ─── */
 .card-grid {
   display: grid;
@@ -334,6 +350,11 @@ main {
   line-height: 1.6;
 }
 
+.callout p svg {
+  vertical-align: -2px;
+  margin-right: 2px;
+}
+
 /* ─── Emergency List ─── */
 .emergency-list {
   display: grid;
@@ -360,6 +381,37 @@ main {
   font-size: 1.125rem;
   font-weight: 600;
   margin-bottom: var(--space-sm);
+}
+
+.prep-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.prep-heading svg {
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.prep-links {
+  margin-top: var(--space-sm);
+  padding-left: var(--space-lg);
+}
+
+.prep-links a {
+  color: var(--color-link);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.prep-links a:hover {
+  color: var(--color-link-hover);
+  text-decoration: underline;
 }
 
 .prep-block ul {

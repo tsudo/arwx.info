@@ -19,38 +19,40 @@
         {
           "icon": "radio",
           "title": "NOAA Weather Radio",
-          "description": "24/7 continuous broadcasts of weather information directly from the National Weather Service.",
+          "description": "24/7 continuous broadcasts of weather information directly from the National Weather Service. Midland models ($30–$75) are loud enough to wake you during nighttime storms.",
           "bullets": [
-            "Programmable alerts for your county",
+            "Programmable alerts for your county via SAME codes",
             "Works during power and internet outages",
-            "Battery backup recommended"
+            "Battery backup recommended",
+            "Tip: configure for Tornado Warning only to avoid alert fatigue"
           ],
           "links": [
             { "label": "NOAA Weather Radio", "url": "https://www.weather.gov/nwr/", "description": "Official NWR station finder and info" },
-            { "label": "Midland WR120", "url": "https://www.midlandusa.com/wr120", "description": "Recommended consumer weather radio" }
+            { "label": "NWS SAME Code Lookup", "url": "https://www.nws.noaa.gov/nwr/coverage/ccov.php?State=AR", "description": "Find your county SAME code for programming" },
+            { "label": "Midland Weather Radios", "url": "https://a.co/d/6sKr92p", "description": "Recommended consumer weather radios ($30–$75)" }
           ]
         },
         {
-          "icon": "bell",
-          "title": "Wireless Emergency Alerts",
-          "description": "Free alerts sent directly to your phone by authorized government agencies.",
+          "icon": "smartphone",
+          "title": "WeatherCall",
+          "description": "Phone call and text alerts for a precise location — not just your county. Only $10–$12/year.",
           "bullets": [
-            "No app or signup required",
-            "Covers tornado, flash flood, and extreme weather warnings",
-            "Ensure WEA is enabled in your phone settings"
+            "Alerts by call and SMS to your phone",
+            "Location-specific, not county-wide",
+            "Add to your phone's sleep mode exceptions so calls come through at night"
           ],
           "links": [
-            { "label": "WEA Info (FCC)", "url": "https://www.fcc.gov/consumers/guides/wireless-emergency-alerts-wea", "description": "How WEA works and how to enable it" }
+            { "label": "WeatherCall", "url": "https://weathercallservices.com/personal-use/", "description": "Sign up for location-based weather alerts" }
           ]
         },
         {
           "icon": "radar",
-          "title": "Live Radar",
-          "description": "Real-time radar for tracking storms across Arkansas.",
+          "title": "RadarScope",
+          "description": "The go-to professional weather radar app. The only radar app recommended for accurate and timely data.",
           "bullets": [
-            "Check radar before and during severe weather events",
+            "Real-time NEXRAD radar data",
             "Learn to read velocity and reflectivity displays",
-            "Multiple free options available"
+            "Available on iOS, Android, and desktop"
           ],
           "links": [
             { "label": "RadarScope", "url": "https://www.radarscope.app/", "description": "Professional-grade radar app (paid)" },
@@ -61,7 +63,20 @@
       ],
       "alertsAndApps": {
         "heading": "Alert Apps & Services",
-        "description": "Supplement your weather radio with these mobile tools for real-time alerts and forecasts.",
+        "icon": "bell",
+        "description": "Supplement your weather radio with these mobile tools for real-time alerts and forecasts. Storms and tornadoes can strike at night — having a system that can wake you is critical.",
+        "privacyNote": "Be cautious with weather apps — many, including well-known ones, monetize by selling user data. Always read the privacy policy before downloading.",
+        "links": [
+          { "label": "Hello Weather", "url": "https://helloweather.com/", "description": "Privacy-friendly weather app with a clean interface (no push alerts — use system notifications)" },
+          { "label": "FEMA App", "url": "https://www.fema.gov/about/news-multimedia/mobile-products", "description": "Fast mobile alerts, shelter finder, and disaster planning resources" },
+          { "label": "Red Cross Emergency App", "url": "https://www.redcross.org/get-help/how-to-prepare-for-emergencies/mobile-apps.html", "description": "Set alert locations for family members; available on iOS and Android" },
+          { "label": "Wireless Emergency Alerts (WEA)", "url": "https://www.fcc.gov/consumers/guides/wireless-emergency-alerts-wea", "description": "Free alerts direct to your phone — no app needed. Ensure WEA is enabled in settings." }
+        ]
+      },
+      "officialWeather": {
+        "heading": "Official Weather Sources",
+        "icon": "cloud-lightning",
+        "description": "Authoritative forecasts and data from the National Weather Service.",
         "links": [
           { "label": "Weather.gov (NWS)", "url": "https://www.weather.gov/", "description": "Official forecasts and warnings" },
           { "label": "NWS Little Rock", "url": "https://www.weather.gov/lzk/", "description": "Local forecast office for central Arkansas" },
@@ -86,24 +101,36 @@
         "heading": "Preparedness 101",
         "sections": [
           {
+            "icon": "eye",
             "title": "Know Your Risk",
             "items": [
-              "Arkansas is in Dixie Alley — tornado season peaks March through June",
+              "Arkansas is in Tornado Alley — tornado season peaks March through June, with a secondary season in fall",
               "Flash flooding is the #1 weather-related killer in Arkansas",
               "Severe storms can produce tornadoes, damaging winds, and large hail with little warning",
               "Nighttime tornadoes are disproportionately deadly — always have alerts enabled while sleeping"
             ]
           },
           {
+            "icon": "clipboard",
             "title": "Build a Plan",
             "items": [
               "Identify your safe room: interior room, lowest floor, away from windows",
               "Practice tornado drills with your household at least twice a year",
-              "Establish an out-of-state contact person for family communication",
               "Know the difference: Watch = conditions favorable; Warning = take shelter now"
             ]
           },
           {
+            "icon": "message-circle",
+            "title": "Communication Plan",
+            "items": [
+              "Designate an out-of-town contact as your family's relay point",
+              "SMS/text messages are more likely to go through than calls when networks are overloaded",
+              "If iMessage fails, switch to SMS — know how to do this on your device",
+              "Keep a written list of important phone numbers in case your phone is lost or damaged"
+            ]
+          },
+          {
+            "icon": "backpack",
             "title": "Build a Kit",
             "items": [
               "Water: 1 gallon per person per day for 3 days minimum",
@@ -111,14 +138,24 @@
               "Flashlight, batteries, NOAA weather radio",
               "First aid kit, medications (7-day supply)",
               "Phone charger (battery bank), important documents in waterproof bag",
-              "Cash in small bills"
+              "Emergency ponchos, trash bags, basic toiletries",
+              "Cash in small bills, multitool"
+            ],
+            "links": [
+              { "label": "Ready.gov Emergency Supply List", "url": "https://www.ready.gov/kit", "description": "Comprehensive federal supply checklist" }
             ]
           }
         ]
       },
       "advancedTips": {
         "heading": "Advanced Tips",
+        "icon": "sparkles",
         "items": [
+          "Wear sturdy shoes when taking shelter — even at home. Debris and broken glass are common after storms.",
+          "Keep helmets accessible for children — bike helmets, batting helmets, anything to protect their heads",
+          "Equip each family member with a whistle for emergency signaling if trapped",
+          "Save important documents locally on your phone, accessible offline — don't rely on cloud access during outages",
+          "Practice drills regularly to reduce panic and ensure everyone knows what to do",
           "Learn to read SPC mesoscale discussions and convective outlooks",
           "Understand radar signatures: hook echoes, debris balls, velocity couplets",
           "Follow local NWS chat discussions during active weather",

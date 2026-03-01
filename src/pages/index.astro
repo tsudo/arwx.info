@@ -30,12 +30,25 @@ const page = siteData.pages.home;
     </div>
   </Section>
 
-  <Section
-    id="alerts"
-    heading={page.alertsAndApps.heading}
-    description={page.alertsAndApps.description}
-  >
+  <Section id="alerts">
+    <div class="section-heading-with-icon">
+      <Icon name="bell" size={22} />
+      <h2>{page.alertsAndApps.heading}</h2>
+    </div>
+    <p class="section-description">{page.alertsAndApps.description}</p>
+    <Callout variant="warning">
+      <p><Icon name="eye-off" size={16} /> <strong>Privacy note:</strong> {page.alertsAndApps.privacyNote}</p>
+    </Callout>
     <LinkList links={page.alertsAndApps.links} />
+  </Section>
+
+  <Section id="official-weather">
+    <div class="section-heading-with-icon">
+      <Icon name="cloud-lightning" size={22} />
+      <h2>{page.officialWeather.heading}</h2>
+    </div>
+    <p class="section-description">{page.officialWeather.description}</p>
+    <LinkList links={page.officialWeather.links} />
   </Section>
 
   <Section
@@ -46,24 +59,49 @@ const page = siteData.pages.home;
     <LinkList links={page.officialSources.links} />
   </Section>
 
-  <Section id="prep" heading={page.prep101.heading}>
+  <Section id="prep">
+    <div class="section-heading-with-icon">
+      <Icon name="shield" size={22} />
+      <h2>{page.prep101.heading}</h2>
+    </div>
     {page.prep101.sections.map((section) => (
       <div class="prep-block">
-        <h3>{section.title}</h3>
+        <h3 class="prep-heading">
+          {section.icon && <Icon name={section.icon} size={18} />}
+          {section.title}
+        </h3>
         <ul>
           {section.items.map((item) => <li>{item}</li>)}
         </ul>
+        {section.links && section.links.length > 0 && (
+          <div class="prep-links">
+            {section.links.map((link) => (
+              <a href={link.url} rel="noopener noreferrer" target="_blank">
+                {link.label} <Icon name="arrow-up-right" size={14} />
+              </a>
+            ))}
+          </div>
+        )}
       </div>
     ))}
   </Section>
 
-  <Section id="advanced" heading={page.advancedTips.heading}>
+  <Section id="advanced">
+    <div class="section-heading-with-icon">
+      <Icon name="sparkles" size={22} />
+      <h2>{page.advancedTips.heading}</h2>
+    </div>
     <ul class="tips-list">
       {page.advancedTips.items.map((item) => <li>{item}</li>)}
     </ul>
   </Section>
 
-  <Section id="meteorologists" heading={page.meteorologists.heading} description={page.meteorologists.description}>
+  <Section id="meteorologists">
+    <div class="section-heading-with-icon">
+      <Icon name="users" size={22} />
+      <h2>{page.meteorologists.heading}</h2>
+    </div>
+    <p class="section-description">{page.meteorologists.description}</p>
     <div class="people-grid">
       {page.meteorologists.people.map((person) => (
         <div class="person-card">
@@ -79,6 +117,6 @@ const page = siteData.pages.home;
   </Section>
 
   <Callout variant="info">
-    <p><strong>Watch vs. Warning:</strong> A <em>Watch</em> means conditions are favorable for severe weather. A <em>Warning</em> means severe weather is occurring or imminent — take action immediately.</p>
+    <p><strong>Watch vs. Warning:</strong> A <em>Watch</em> means conditions are favorable for severe weather — stay alert. A <em>Warning</em> means severe weather is occurring or imminent — take shelter immediately.</p>
   </Callout>
 </BaseLayout>
