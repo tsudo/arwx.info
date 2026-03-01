@@ -19,7 +19,7 @@
         { "icon": "radar", "label": "RadarScope", "url": "https://www.radarscope.app/" },
         { "icon": "smartphone", "label": "Hello Weather", "url": "https://helloweather.com/" },
         { "icon": "radio", "label": "Weather Radio", "url": "https://a.co/d/6sKr92p" },
-        { "icon": "users", "label": "WXexperts List", "url": "https://x.com/i/lists/43404471" }
+        { "icon": "x-twitter", "label": "WXexperts List", "url": "https://x.com/i/lists/43404471" }
       ],
       "essentials": [
         {
@@ -117,6 +117,19 @@
             ]
           },
           {
+            "icon": "sparkles",
+            "title": "Safety Tips",
+            "items": [
+              "Wear sturdy shoes when taking shelter — even at home. Debris and broken glass are common after storms.",
+              "Keep helmets accessible for children — bike helmets, batting helmets, anything to protect their heads",
+              "Equip each family member with a whistle for emergency signaling if trapped",
+              "Save important documents locally on your phone, accessible offline — don't rely on cloud access during outages",
+              "Practice drills regularly to reduce panic and ensure everyone knows what to do",
+              "Consider a storm shelter or safe room if in a manufactured home or tornado-prone area",
+              "Review your insurance coverage annually — standard policies often exclude flood damage"
+            ]
+          },
+          {
             "icon": "clipboard",
             "title": "Build a Plan",
             "items": [
@@ -151,19 +164,6 @@
               { "label": "Ready.gov Emergency Supply List", "url": "https://www.ready.gov/kit", "description": "Comprehensive federal supply checklist" }
             ]
           }
-        ]
-      },
-      "advancedTips": {
-        "heading": "Advanced Tips",
-        "icon": "sparkles",
-        "items": [
-          "Wear sturdy shoes when taking shelter — even at home. Debris and broken glass are common after storms.",
-          "Keep helmets accessible for children — bike helmets, batting helmets, anything to protect their heads",
-          "Equip each family member with a whistle for emergency signaling if trapped",
-          "Save important documents locally on your phone, accessible offline — don't rely on cloud access during outages",
-          "Practice drills regularly to reduce panic and ensure everyone knows what to do",
-          "Consider a storm shelter or safe room if in a manufactured home or tornado-prone area",
-          "Review your insurance coverage annually — standard policies often exclude flood damage"
         ]
       },
       "meteorologists": {

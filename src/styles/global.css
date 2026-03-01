@@ -171,6 +171,16 @@ main {
 }
 
 /* ─── Quick Links ─── */
+.quick-links-heading {
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+  margin-top: var(--space-xl);
+  margin-bottom: 0;
+}
+
 .quick-links {
   display: flex;
   flex-wrap: wrap;
