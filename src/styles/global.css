@@ -129,6 +129,11 @@ body {
 
 .header-inner nav a.active {
   color: var(--color-accent);
+  border-bottom: 2px solid var(--color-accent);
+}
+
+.nav-short {
+  display: none;
 }
 
 .social-link {
@@ -1055,14 +1060,31 @@ main {
   text-decoration: underline;
 }
 
-.footer-note {
-  margin-top: var(--space-sm);
-  font-style: italic;
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.footer-links a i {
+  margin-right: 0.3em;
+  opacity: 0.7;
+}
+
+.footer-links a:hover i {
+  opacity: 1;
+}
+
+.footer-links .separator {
+  color: var(--color-border);
 }
 
 .footer-attribution {
-  margin-top: var(--space-md);
+  margin-top: var(--space-lg);
   font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
 }
 
 .footer-tagline {
@@ -1070,23 +1092,13 @@ main {
   font-style: italic;
 }
 
+.footer-note {
+  margin-top: var(--space-md);
+  font-style: italic;
+}
+
 .footer-copyright {
   margin-top: var(--space-xs);
-}
-
-.footer-license {
-  margin-top: var(--space-xs);
-}
-
-.footer-license a {
-  font-weight: 500;
-}
-
-.cc-icon {
-  max-width: 1em;
-  max-height: 1em;
-  margin-left: 0.2em;
-  vertical-align: text-bottom;
 }
 
 /* ─── Focus States ─── */
@@ -1117,6 +1129,14 @@ button:focus-visible {
 
   .header-inner nav a {
     font-size: 0.8125rem;
+  }
+
+  .nav-full {
+    display: none;
+  }
+
+  .nav-short {
+    display: inline;
   }
 
   main {
