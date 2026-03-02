@@ -5,6 +5,7 @@ import Card from '../components/Card.astro';
 import LinkList from '../components/LinkList.astro';
 import Callout from '../components/Callout.astro';
 import Icon from '../components/Icon.astro';
+import WeatherCard from '../components/WeatherCard.astro';
 import siteData from '../content/site.json';
 
 const page = siteData.pages.home;
@@ -24,6 +25,8 @@ const page = siteData.pages.home;
       ))}
     </div>
   </div>
+
+  <WeatherCard />
 
   <Section id="essentials" heading="The Essentials">
     <div class="card-grid">

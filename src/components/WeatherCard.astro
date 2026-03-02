@@ -1,0 +1,288 @@
+---
+import Icon from './Icon.astro';
+import siteData from '../content/site.json';
+
+const weather = (siteData as any).weather;
+const locations = weather.locations;
+const defaultIdx = weather.defaultLocation;
+---
+
+<div class="weather-card" id="weather-card">
+  <div class="wc-header">
+    <div class="wc-location">
+      <Icon name="map-pin" size={16} />
+      <select id="wc-location-select" aria-label="Select location">
+        {locations.map((loc: any, i: number) => (
+          <option value={i} selected={i === defaultIdx}>{loc.label}</option>
+        ))}
+      </select>
+    </div>
+    <button type="button" id="wc-locate-btn" class="wc-locate-btn" title="Use my location">
+      <Icon name="radar" size={16} />
+      <span class="wc-locate-label">My Location</span>
+    </button>
+  </div>
+
+  <div id="wc-loading" class="wc-loading">
+    <div class="spinner"></div>
+    <span>Loading weather...</span>
+  </div>
+
+  <div id="wc-error" class="wc-error" style="display:none;"></div>
+
+  <div id="wc-content" class="wc-content" style="display:none;">
+    <div class="wc-body">
+      <div class="wc-forecast-col">
+        <div class="wc-current">
+          <div class="wc-temp" id="wc-temp"></div>
+          <div class="wc-desc" id="wc-desc"></div>
+          <div class="wc-details" id="wc-details"></div>
+        </div>
+
+        <div class="wc-periods" id="wc-periods"></div>
+
+        <div class="wc-footer">
+          <a href="/forecast/" class="wc-forecast-link">
+            Full Forecast <Icon name="arrow-up-right" size={14} />
+          </a>
+          <span class="wc-attribution" id="wc-attribution"></span>
+        </div>
+      </div>
+
+      <div class="wc-radar-col">
+        <a href="https://radar.weather.gov/" class="wc-radar" target="_blank" rel="noopener noreferrer">
+          <img
+            src="https://radar.weather.gov/ridge/standard/SOUTHMISSVLY_loop.gif"
+            alt="Southern Mississippi Valley regional radar loop"
+            loading="lazy"
+          />
+          <span class="wc-radar-label">Regional Radar <Icon name="arrow-up-right" size={12} /></span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline define:vars={{ locations, defaultIdx }}>
+  document.addEventListener('DOMContentLoaded', () => {
+    const API_HEADERS = { 'User-Agent': 'arwx.info weather card (https://arwx.info)' };
+    const STORAGE_KEY = 'arwx-weather-location';
+
+    const $ = (id) => document.getElementById(id);
+    const select = $('wc-location-select');
+    const loadingEl = $('wc-loading');
+    const errorEl = $('wc-error');
+    const contentEl = $('wc-content');
+
+    // Restore saved location
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved !== null) {
+      const idx = parseInt(saved, 10);
+      if (idx >= 0 && idx < locations.length) {
+        select.value = idx;
+      } else if (saved === 'geo') {
+        // Geolocation was last used — we'll trigger it on load
+      }
+    }
+
+    function cToF(c) { return c !== null && c !== undefined ? Math.round(c * 9/5 + 32) : null; }
+    function mpsToMph(mps) { return mps !== null && mps !== undefined ? Math.round(mps * 2.237) : null; }
+
+    function windCardinal(deg) {
+      if (deg === null || deg === undefined) return '';
+      const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+      return dirs[Math.round(deg / 22.5) % 16];
+    }
+
+    function showLoading() {
+      loadingEl.style.display = 'flex';
+      errorEl.style.display = 'none';
+      contentEl.style.display = 'none';
+    }
+
+    function showError(msg) {
+      errorEl.textContent = msg;
+      errorEl.style.display = 'block';
+      loadingEl.style.display = 'none';
+      contentEl.style.display = 'none';
+    }
+
+    function showContent() {
+      contentEl.style.display = 'block';
+      loadingEl.style.display = 'none';
+      errorEl.style.display = 'none';
+    }
+
+    async function fetchWeather(lat, lng) {
+      showLoading();
+
+      try {
+        // Step 1: Point metadata
+        const pointRes = await fetch(
+          `https://api.weather.gov/points/${lat.toFixed(4)},${lng.toFixed(4)}`,
+          { headers: API_HEADERS }
+        );
+
+        if (!pointRes.ok) {
+          showError(pointRes.status === 404
+            ? 'Location outside NWS coverage.'
+            : 'NWS API error. Try again.');
+          return;
+        }
+
+        const pointData = await pointRes.json();
+        const props = pointData.properties;
+
+        // Step 2: Fetch forecast + observations in parallel
+        const [forecastRes, stationsRes] = await Promise.all([
+          fetch(props.forecast, { headers: API_HEADERS }),
+          fetch(props.observationStations, { headers: API_HEADERS }).catch(() => null)
+        ]);
+
+        if (!forecastRes.ok) {
+          showError('Could not fetch forecast. Try again.');
+          return;
+        }
+
+        const forecastData = await forecastRes.json();
+        const periods = forecastData.properties.periods.slice(0, 3);
+
+        // Current observations
+        let tempF = null, desc = '', windStr = '', humidity = null, dewF = null, stationName = '';
+
+        if (stationsRes && stationsRes.ok) {
+          try {
+            const stationsData = await stationsRes.json();
+            const stationUrl = stationsData.features?.[0]?.id;
+            if (stationUrl) {
+              const obsRes = await fetch(`${stationUrl}/observations/latest`, { headers: API_HEADERS });
+              if (obsRes.ok) {
+                const obsData = await obsRes.json();
+                const obs = obsData.properties;
+                stationName = stationsData.features[0].properties?.name || '';
+
+                tempF = cToF(obs.temperature?.value);
+                dewF = cToF(obs.dewpoint?.value);
+                humidity = obs.relativeHumidity?.value !== null && obs.relativeHumidity?.value !== undefined
+                  ? Math.round(obs.relativeHumidity.value) : null;
+                desc = obs.textDescription || '';
+
+                const windMph = mpsToMph(obs.windSpeed?.value);
+                const windDir = obs.windDirection?.value;
+                if (windMph !== null) {
+                  windStr = windMph === 0 ? 'Calm' : `${windCardinal(windDir)} ${windMph} mph`;
+                }
+              }
+            }
+          } catch (e) { /* non-critical */ }
+        }
+
+        // Render current conditions
+        if (tempF !== null) {
+          $('wc-temp').textContent = `${tempF}\u00B0F`;
+        } else {
+          // Fallback to forecast period temp
+          $('wc-temp').textContent = `${periods[0].temperature}\u00B0${periods[0].temperatureUnit}`;
+        }
+
+        $('wc-desc').textContent = desc || periods[0].shortForecast;
+
+        const details = [];
+        if (windStr) details.push(`Wind: ${windStr}`);
+        if (humidity !== null) details.push(`Humidity: ${humidity}%`);
+        if (dewF !== null) details.push(`Dewpoint: ${dewF}\u00B0F`);
+        $('wc-details').textContent = details.join(' \u00B7 ');
+
+        // Render forecast periods
+        $('wc-periods').innerHTML = periods.map(p => `
+          <div class="wc-period">
+            <div class="wc-period-name">${p.name}</div>
+            <div class="wc-period-temp">${p.isDaytime ? 'Hi' : 'Lo'} ${p.temperature}\u00B0${p.temperatureUnit}</div>
+            <div class="wc-period-short">${p.shortForecast}</div>
+          </div>
+        `).join('');
+
+        // Attribution
+        const officeId = props.cwa || '';
+        $('wc-attribution').textContent = stationName
+          ? `Via ${stationName} \u00B7 NWS ${officeId}`
+          : `NWS ${officeId}`;
+
+        showContent();
+
+      } catch (err) {
+        showError('Network error. Check your connection.');
+      }
+    }
+
+    function loadLocation(idx) {
+      const loc = locations[idx];
+      if (loc) {
+        fetchWeather(loc.lat, loc.lng);
+      }
+    }
+
+    // Location select change
+    select.addEventListener('change', () => {
+      const idx = parseInt(select.value, 10);
+      localStorage.setItem(STORAGE_KEY, idx);
+      loadLocation(idx);
+    });
+
+    // Geolocation button
+    $('wc-locate-btn').addEventListener('click', () => {
+      if (!navigator.geolocation) {
+        showError('Geolocation not supported.');
+        return;
+      }
+      showLoading();
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          localStorage.setItem(STORAGE_KEY, 'geo');
+          // Deselect preset — add a custom option if needed
+          let customOpt = select.querySelector('option[value="geo"]');
+          if (!customOpt) {
+            customOpt = document.createElement('option');
+            customOpt.value = 'geo';
+            customOpt.textContent = 'My Location';
+            select.appendChild(customOpt);
+          }
+          select.value = 'geo';
+          fetchWeather(pos.coords.latitude, pos.coords.longitude);
+        },
+        () => { showError('Could not get location. Check browser permissions.'); },
+        { timeout: 10000 }
+      );
+    });
+
+    // Initial load
+    if (saved === 'geo') {
+      // Re-trigger geolocation
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            let customOpt = select.querySelector('option[value="geo"]');
+            if (!customOpt) {
+              customOpt = document.createElement('option');
+              customOpt.value = 'geo';
+              customOpt.textContent = 'My Location';
+              select.appendChild(customOpt);
+            }
+            select.value = 'geo';
+            fetchWeather(pos.coords.latitude, pos.coords.longitude);
+          },
+          () => {
+            // Fallback to default
+            localStorage.removeItem(STORAGE_KEY);
+            loadLocation(defaultIdx);
+          },
+          { timeout: 10000 }
+        );
+      } else {
+        loadLocation(defaultIdx);
+      }
+    } else {
+      loadLocation(parseInt(select.value, 10));
+    }
+  });
+</script>

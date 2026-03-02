@@ -227,5 +227,14 @@
       },
       "customSections": []
     }
+  },
+  "weather": {
+    "locations": [
+      { "label": "Little Rock", "lat": 34.7465, "lng": -92.2896 },
+      { "label": "NW Arkansas", "lat": 36.0726, "lng": -94.1574 },
+      { "label": "Jonesboro", "lat": 35.8423, "lng": -90.7043 },
+      { "label": "Fort Smith", "lat": 35.3859, "lng": -94.3985 }
+    ],
+    "defaultLocation": 0
   }
 }
