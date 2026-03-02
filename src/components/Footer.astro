@@ -4,24 +4,24 @@ const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer">
-  <div class="footer-inner">
-    <nav aria-label="Footer navigation">
+  <div class="footer-note">
+    Not affiliated with any government agency. For informational purposes only.
+  </div>
+  <div class="footer-grid">
+    <nav class="footer-nav" aria-label="Footer navigation">
       <a href="/">Readiness</a>
       <a href="/forecast/">Forecast</a>
       <a href="/disaster-resources/">Disaster Resources</a>
     </nav>
-    <div class="footer-meta">
-      <p class="footer-links">
-        <a href={siteData.meta.suggestionsUrl} rel="noopener noreferrer" target="_blank"><i class="fa-solid fa-message" aria-hidden="true"></i> Send Feedback</a>
-        <span class="separator">&middot;</span>
-        <a href={siteData.meta.kofiUrl} rel="noopener noreferrer" target="_blank"><i class="fa-solid fa-mug-hot" aria-hidden="true"></i> Support on Ko-fi</a>
-        <span class="separator">&middot;</span>
-        <a href={siteData.meta.repoUrl} rel="noopener noreferrer" target="_blank"><i class="fa-brands fa-github" aria-hidden="true"></i> GitHub</a>
-      </p>
-      <p class="footer-attribution">A <em>Helpful Neighbor</em> project by <a href={siteData.meta.authorUrl} rel="noopener noreferrer" target="_blank">{siteData.meta.authorName}</a></p>
-      <p class="footer-tagline">Be Kind. Be Helpful.</p>
-      <p class="footer-note">Not affiliated with any government agency. For informational purposes only.</p>
-      <p class="footer-copyright">&copy; {year} ARwx.info &middot; Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener noreferrer" target="_blank">CC BY 4.0</a></p>
+    <div class="footer-attribution">
+      A <strong class="helpful-neighbor"><i class="fa-solid fa-hand-holding-heart" aria-hidden="true"></i> Helpful Neighbor</strong> project — <span class="built-by">built by</span> <a href={siteData.meta.authorUrl} target="_blank" rel="noopener">{siteData.meta.authorName}</a>
+    </div>
+    <div class="footer-license">
+      &copy; {year} ARwx.info &middot; Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>
+    </div>
+    <div class="footer-links">
+      <a href={siteData.meta.suggestionsUrl} target="_blank" rel="noopener"><i class="fa-solid fa-message" aria-hidden="true"></i> Feedback</a>
+      <a href={siteData.meta.kofiUrl} target="_blank" rel="noopener"><i class="fa-solid fa-mug-hot" aria-hidden="true"></i> Support on Ko-fi</a>
     </div>
   </div>
 </footer>
