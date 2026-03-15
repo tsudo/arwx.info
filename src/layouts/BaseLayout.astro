@@ -28,7 +28,12 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site);
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:site_name" content="ARwx.info" />
     <meta property="og:image" content={new URL('/assets/arwx-logo.jpg', Astro.site)} />
-    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL('/assets/arwx-logo.jpg', Astro.site)} />
+    <meta property="twitter:domain" content="arwx.info" />
+    <meta property="twitter:url" content={canonicalUrl} />
 
     <!-- Fonts -->
     <link rel="preload" href="/fonts/inter-variable.woff2" as="font" type="font/woff2" crossorigin />
