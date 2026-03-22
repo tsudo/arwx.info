@@ -9,3 +9,42 @@ const { variant = 'info' } = Astro.props;
 <div class:list={['callout', `callout-${variant}`]}>
   <slot />
 </div>
+
+<style>
+  .callout {
+    border-radius: var(--radius);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-2xl);
+    border-left: 4px solid;
+  }
+
+  .callout-info {
+    background: var(--color-info-bg);
+    border-color: var(--color-info-border);
+  }
+
+  .callout-warning {
+    background: var(--color-warning-bg);
+    border-color: var(--color-warning-border);
+  }
+
+  .callout-emergency {
+    background: var(--color-emergency-bg);
+    border-color: var(--color-emergency-border);
+  }
+
+  .callout :global(h2) {
+    font-size: 1.25rem;
+    margin-bottom: var(--space-md);
+  }
+
+  .callout :global(p) {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+
+  .callout :global(p .icon) {
+    vertical-align: -2px;
+    margin-right: 2px;
+  }
+</style>

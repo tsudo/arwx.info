@@ -37,3 +37,90 @@ const { icon, title, description, bullets = [], links = [] } = Astro.props;
     </ul>
   )}
 </div>
+
+<style>
+  .card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: var(--space-lg);
+    background: var(--color-bg);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-sm);
+  }
+
+  .card-header :global(.icon) {
+    color: var(--color-accent);
+    flex-shrink: 0;
+  }
+
+  .card-header h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+
+  .card-description {
+    color: var(--color-text-secondary);
+    font-size: 0.9375rem;
+    margin-bottom: var(--space-md);
+  }
+
+  .card-bullets {
+    list-style: none;
+    margin-bottom: var(--space-md);
+  }
+
+  .card-bullets li {
+    font-size: 0.9375rem;
+    color: var(--color-text-secondary);
+    padding: var(--space-xs) 0;
+    padding-left: var(--space-lg);
+    position: relative;
+  }
+
+  .card-bullets li::before {
+    content: '\2022';
+    position: absolute;
+    left: var(--space-sm);
+    color: var(--color-text-muted);
+  }
+
+  .card-links {
+    list-style: none;
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--space-md);
+  }
+
+  .card-links li {
+    padding: var(--space-xs) 0;
+  }
+
+  .card-links a {
+    color: var(--color-link);
+    text-decoration: none;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+
+  .card-links a:hover {
+    color: var(--color-link-hover);
+    text-decoration: underline;
+  }
+
+  .card-links a :global(.icon) {
+    flex-shrink: 0;
+  }
+
+  .card-links .link-description {
+    display: block;
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+  }
+</style>

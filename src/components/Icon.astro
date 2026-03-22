@@ -6,54 +6,38 @@ interface Props {
 
 const { name, size = 24 } = Astro.props;
 
-// Filled icons use fill="currentColor" instead of stroke
-const filledIcons = new Set(['x-twitter']);
-
-const icons: Record<string, string> = {
-  'x-twitter': '<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>',
-  radio: '<path d="M20 6H8.8l6.4-4.8-1.2-1.6L6 6H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2ZM8 18a3 3 0 1 1 0-6 3 3 0 0 1 0 6Zm10-4h-4v-2h4v2Z"/>',
-  bell: '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9ZM13.73 21a2 2 0 0 1-3.46 0"/>',
-  radar: '<path d="M12 2a10 10 0 1 0 10 10h-2a8 8 0 1 1-2.34-5.66l-1.42 1.42A6 6 0 1 0 18 12h-2a4 4 0 1 1-1.17-2.83l-1.42 1.42A2 2 0 1 0 14 12h8A10 10 0 0 0 12 2Z"/>',
-  shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/>',
-  'arrow-up-right': '<path d="M7 17 17 7M7 7h10v10"/>',
-  house: '<path d="M3 9.5 12 2l9 7.5V20a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9.5Z"/><path d="M9 22V12h6v10"/>',
-  box: '<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.27 6.96 8.73 5.04 8.73-5.04M12 22.08V12"/>',
-  phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92Z"/>',
-  'map-pin': '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/>',
-  alert: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
-  book: '<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>',
-  users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
-  'heart-handshake': '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M12 5 9.04 7.96a2.17 2.17 0 0 0 0 3.08c.82.82 2.13.85 3 .07l2.07-1.9a2.82 2.82 0 0 1 3.79 0l2.96 2.66"/><path d="m18 15-2-2"/><path d="m15 18-2-2"/>',
-  wrench: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/>',
-  smartphone: '<rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/>',
-  'cloud-lightning': '<path d="M6 16.326A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 .5 8.973"/><path d="m13 12-3 5h4l-3 5"/>',
-  eye: '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
-  'eye-off': '<path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/>',
-  clipboard: '<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>',
-  megaphone: '<path d="m3 11 18-5v12L3 13v-2z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
-  'message-circle': '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
-  zap: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
-  backpack: '<path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M9 6V4a3 3 0 0 1 6 0v2"/><path d="M8 21v-5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5"/><path d="M8 10h8"/>',
-  'hard-hat': '<path d="M2 18a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v2z"/><path d="M10 15V6.5a3.5 3.5 0 0 1 7 0V15"/><path d="M7 15v-2a6 6 0 0 1 6-6"/>',
-  footprints: '<path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5 10 7.89 8 10 8 12v4"/><path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 2.39 2 4.11 2 6.11V20"/><path d="M4 16h4M14 20h4"/>',
-  'volume-2': '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>',
-  sparkles: '<path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/>'
+const faIcons: Record<string, string> = {
+  'x-twitter': 'fa-brands fa-x-twitter',
+  'radio': 'fa-solid fa-radio',
+  'bell': 'fa-solid fa-bell',
+  'radar': 'fa-solid fa-location-crosshairs',
+  'shield': 'fa-solid fa-shield-halved',
+  'arrow-up-right': 'fa-solid fa-up-right-from-square',
+  'house': 'fa-solid fa-house',
+  'box': 'fa-solid fa-box',
+  'phone': 'fa-solid fa-phone',
+  'map-pin': 'fa-solid fa-location-dot',
+  'alert': 'fa-solid fa-triangle-exclamation',
+  'book': 'fa-solid fa-book',
+  'users': 'fa-solid fa-users',
+  'heart-handshake': 'fa-solid fa-hand-holding-heart',
+  'wrench': 'fa-solid fa-wrench',
+  'smartphone': 'fa-solid fa-mobile-screen',
+  'cloud-lightning': 'fa-solid fa-cloud-bolt',
+  'eye': 'fa-solid fa-eye',
+  'eye-off': 'fa-solid fa-eye-slash',
+  'clipboard': 'fa-solid fa-clipboard',
+  'megaphone': 'fa-solid fa-bullhorn',
+  'message-circle': 'fa-solid fa-comment',
+  'zap': 'fa-solid fa-bolt',
+  'backpack': 'fa-solid fa-suitcase',
+  'hard-hat': 'fa-solid fa-helmet-safety',
+  'footprints': 'fa-solid fa-shoe-prints',
+  'volume-2': 'fa-solid fa-volume-high',
+  'sparkles': 'fa-solid fa-wand-magic-sparkles',
 };
 
-const svgContent = icons[name] || '';
+const faClass = faIcons[name] || 'fa-solid fa-circle-question';
 ---
 
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  width={size}
-  height={size}
-  viewBox="0 0 24 24"
-  fill={filledIcons.has(name) ? 'currentColor' : 'none'}
-  stroke={filledIcons.has(name) ? 'none' : 'currentColor'}
-  stroke-width={filledIcons.has(name) ? '0' : '2'}
-  stroke-linecap="round"
-  stroke-linejoin="round"
-  aria-hidden="true"
->
-  <Fragment set:html={svgContent} />
-</svg>
+<i class:list={[faClass, 'icon']} style={`font-size: ${size}px`} aria-hidden="true"></i>
