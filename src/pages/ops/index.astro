@@ -1,0 +1,982 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
+import site from '../../content/site.json';
+import ops from '../../content/ops.json';
+import airports from '../../content/airports.json';
+
+const opsDefault = site.meta.opsDefault;
+const opsChips = site.meta.opsChips;
+const aviationDefaults = site.meta.opsAviationDefaults;
+
+type Airport = { name: string; lat: number; lon: number; icao?: string };
+const aviationCards = aviationDefaults.map((code) => {
+  const a = (airports as Record<string, Airport>)[code] ?? { name: code, lat: 0, lon: 0 };
+  return { code, icao: a.icao ?? `K${code}`, ...a };
+});
+
+const E = ops.embeds;
+---
+
+<BaseLayout
+  title="Ops — ARwx"
+  description="Personal severe weather monitoring dashboard."
+  noindex={true}
+>
+  <div class="ops-hero">
+    <h1>Ops</h1>
+    <p class="ops-sub">Personal severe weather monitoring &middot; not indexed</p>
+  </div>
+
+  <section class="ops-locbar" aria-label="Location selector">
+    <div class="locbar-row">
+      <div class="locbar-search">
+        <Icon name="map-pin" size={16} />
+        <input
+          type="text"
+          id="ops-search"
+          placeholder="Search address, ZIP, or 3-letter airport code (e.g. LIT)"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button id="ops-search-btn" type="button">Go</button>
+        <button id="ops-locate-btn" type="button" title="Use my location" aria-label="Use my location">
+          <Icon name="radar" size={16} />
+        </button>
+      </div>
+      <div class="locbar-chips">
+        {opsChips.map((c) => (
+          <button type="button" class="loc-chip" data-lat={c.lat} data-lon={c.lon} data-name={c.name}>{c.name}</button>
+        ))}
+      </div>
+    </div>
+    <div class="locbar-current" id="ops-current">
+      <span class="loc-now-label">Showing</span>
+      <span class="loc-now-name" id="ops-current-name">{opsDefault.name}</span>
+      <span class="loc-now-coord" id="ops-current-coord"></span>
+      <span class="loc-now-status" id="ops-current-status"></span>
+    </div>
+  </section>
+
+  <section class="ops-section">
+    <h2 class="ops-section-h"><i class="fa-solid fa-cloud-sun" aria-hidden="true"></i> Forecast</h2>
+    <div id="ops-forecast" class="ops-forecast">
+      <div id="ops-fc-loading" class="ops-loading">Fetching from National Weather Service…</div>
+      <div id="ops-fc-error" class="ops-error" style="display:none;"></div>
+      <div id="ops-fc-result" style="display:none;">
+        <div class="ops-fc-header">
+          <h3 id="ops-fc-cityname"></h3>
+          <div class="ops-fc-meta">
+            <span id="ops-fc-cwa"></span>
+            <span id="ops-fc-coord"></span>
+          </div>
+        </div>
+        <div id="ops-fc-current" class="ops-fc-current"></div>
+        <div class="ops-fc-actions">
+          <button id="ops-share-btn" type="button" class="copy-btn">
+            <Icon name="share" size={14} />
+            Share forecast
+          </button>
+          <a id="ops-nws-link" href="#" target="_blank" rel="noopener noreferrer" class="ops-fc-nwslink">
+            View on weather.gov <i class="fa-solid fa-up-right-from-square" aria-hidden="true"></i>
+          </a>
+          <span id="ops-share-confirm" class="copy-confirm" style="display:none;">Copied</span>
+        </div>
+        <div id="ops-fc-periods" class="ops-fc-periods"></div>
+      </div>
+    </div>
+  </section>
+
+  {/* ─── ACTIVE NOW — national radar + warn/warn map side-by-side, plus live alerts panel ─── */}
+  <section class="ops-section">
+    <h2 class="ops-section-h"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Active now</h2>
+    <div class="ops-embed-grid two-col">
+      <figure class="ops-embed">
+        <img src={E.radarCONUS.img} alt={E.radarCONUS.alt} loading="eager" referrerpolicy="no-referrer" />
+        <figcaption>
+          <strong>Radar</strong>
+          <a href={E.radarCONUS.linkUrl} target="_blank" rel="noopener noreferrer">Open →</a>
+        </figcaption>
+      </figure>
+      <figure class="ops-embed">
+        <img src={E.nationalWarnings.img} alt={E.nationalWarnings.alt} loading="eager" referrerpolicy="no-referrer" />
+        <figcaption>
+          <strong>Watch/Warn</strong>
+          <a href={E.nationalWarnings.sourceUrl} target="_blank" rel="noopener noreferrer">Open →</a>
+        </figcaption>
+      </figure>
+    </div>
+    <div id="ops-alerts" class="ops-alerts">
+      <div class="ops-alerts-head">
+        <strong>Active severe alerts</strong>
+        <span id="ops-alerts-status" class="ops-alerts-status">loading…</span>
+      </div>
+      <div id="ops-alerts-list" class="ops-alerts-list"></div>
+    </div>
+  </section>
+
+  {/* ─── SEVERE OUTLOOK — Day 1 + Day 2 only ─── */}
+  <section class="ops-section">
+    <h2 class="ops-section-h"><i class="fa-solid fa-bolt" aria-hidden="true"></i> Severe outlook</h2>
+    <div class="ops-embed-grid two-col">
+      <figure class="ops-embed">
+        <img src={E.spcDay1.img} alt={E.spcDay1.alt} loading="lazy" referrerpolicy="no-referrer" />
+        <figcaption>
+          <strong>{E.spcDay1.title}</strong>
+          <a href={E.spcDay1.linkUrl} target="_blank" rel="noopener noreferrer">Open →</a>
+        </figcaption>
+      </figure>
+      <figure class="ops-embed">
+        <img src={E.spcDay2.img} alt={E.spcDay2.alt} loading="lazy" referrerpolicy="no-referrer" />
+        <figcaption>
+          <strong>{E.spcDay2.title}</strong>
+          <a href={E.spcDay2.linkUrl} target="_blank" rel="noopener noreferrer">Open →</a>
+        </figcaption>
+      </figure>
+    </div>
+    <ul class="ops-link-list ops-link-list-grid">
+      {ops.severe.links.map((link) => (
+        <li>
+          <a href={link.url} target="_blank" rel="noopener noreferrer">
+            <strong>{link.label}</strong>
+            <span>{link.desc}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  {/* ─── TROPICAL — NHC ─── */}
+  <section class="ops-section">
+    <h2 class="ops-section-h"><i class="fa-solid fa-hurricane" aria-hidden="true"></i> Tropical (NHC)</h2>
+    <div class="ops-embed-grid two-col align-rows">
+      <figure class="ops-embed nhc">
+        <div class="ops-embed-img-wrap">
+          <img src={E.nhcAtl7d.img} alt={E.nhcAtl7d.alt} loading="lazy" referrerpolicy="no-referrer" />
+        </div>
+        <figcaption>
+          <strong>Atlantic 7-day</strong>
+          <a href={E.nhcAtl7d.linkUrl} target="_blank" rel="noopener noreferrer">Open →</a>
+        </figcaption>
+      </figure>
+      <figure class="ops-embed nhc">
+        <div class="ops-embed-img-wrap">
+          <img src={E.nhcPac7d.img} alt={E.nhcPac7d.alt} loading="lazy" referrerpolicy="no-referrer" />
+        </div>
+        <figcaption>
+          <strong>E. Pacific 7-day</strong>
+          <a href={E.nhcPac7d.linkUrl} target="_blank" rel="noopener noreferrer">Open →</a>
+        </figcaption>
+      </figure>
+    </div>
+    <div class="ops-link-row">
+      <a href="https://www.nhc.noaa.gov/" target="_blank" rel="noopener noreferrer">NHC home</a>
+      <a href="https://www.nhc.noaa.gov/cyclones/" target="_blank" rel="noopener noreferrer">Active storm advisories</a>
+      <a href={E.nhcAtl2d.linkUrl} target="_blank" rel="noopener noreferrer">Atlantic 2-day</a>
+    </div>
+  </section>
+
+  {/* ─── LZK + AVIATION ─── */}
+  <div class="ops-grid">
+    <section class="ops-section">
+      <h2 class="ops-section-h"><i class={`fa-solid ${ops.lzk.icon}`} aria-hidden="true"></i> {ops.lzk.title}</h2>
+      <ul class="ops-link-list">
+        {ops.lzk.links.map((link) => (
+          <li>
+            <a href={link.url} target="_blank" rel="noopener noreferrer">
+              <strong>{link.label}</strong>
+              <span>{link.desc}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="ops-section">
+      <h2 class="ops-section-h"><i class={`fa-solid ${ops.aviation.icon}`} aria-hidden="true"></i> {ops.aviation.title}</h2>
+      <div class="ops-aviation-quick">
+        {aviationCards.map((a) => (
+          <span class="aviation-airport">
+            <strong>{a.code}</strong>
+            <a href={`https://aviationweather.gov/data/taf/?id=${a.icao}`} target="_blank" rel="noopener noreferrer">TAF</a>
+            <a href={`https://aviationweather.gov/data/metar/?id=${a.icao}`} target="_blank" rel="noopener noreferrer">METAR</a>
+            <a href={`https://forecast.weather.gov/MapClick.php?lat=${a.lat}&lon=${a.lon}`} target="_blank" rel="noopener noreferrer">FX</a>
+          </span>
+        ))}
+      </div>
+      <ul class="ops-link-list">
+        {ops.aviation.links.map((link) => (
+          <li>
+            <a href={link.url} target="_blank" rel="noopener noreferrer">
+              <strong>{link.label}</strong>
+              <span>{link.desc}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </div>
+
+  <script is:inline define:vars={{ opsDefault, airports }}>
+    document.addEventListener('DOMContentLoaded', () => {
+      const API_HEADERS = { 'User-Agent': 'arwx.info ops dashboard (https://arwx.info)' };
+      const $ = (id) => document.getElementById(id);
+
+      const state = { lat: opsDefault.lat, lon: opsDefault.lon, name: opsDefault.name };
+      let lastShareText = '';
+      let lastNwsUrl = '';
+      let fetchSeq = 0;
+
+      // Defense in depth: never send /ops URL as Referer to third-party APIs.
+      const FETCH_OPTS = { headers: API_HEADERS, referrerPolicy: 'no-referrer' };
+
+      const cToF = (c) => c == null ? null : Math.round(c * 9 / 5 + 32);
+      const mpsToMph = (m) => m == null ? null : Math.round(m * 2.237);
+      const cardinals = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+      const windCardinal = (deg) => deg == null ? '' : cardinals[Math.round(deg / 22.5) % 16];
+
+      // Build a DOM element with text-only children (XSS-safe alternative to innerHTML)
+      function el(tag, attrs, children) {
+        const node = document.createElement(tag);
+        if (attrs) for (const [k, v] of Object.entries(attrs)) {
+          if (k === 'class') node.className = v;
+          else node.setAttribute(k, v);
+        }
+        if (children != null) {
+          const arr = Array.isArray(children) ? children : [children];
+          for (const c of arr) {
+            if (c == null || c === false) continue;
+            node.appendChild(typeof c === 'string' || typeof c === 'number' ? document.createTextNode(String(c)) : c);
+          }
+        }
+        return node;
+      }
+
+      function clearChildren(parent) { while (parent.firstChild) parent.removeChild(parent.firstChild); }
+
+      function setLocation(lat, lon, name, status) {
+        state.lat = +lat;
+        state.lon = +lon;
+        state.name = name;
+        $('ops-current-name').textContent = name;
+        $('ops-current-coord').textContent = formatCoord(state.lat, state.lon);
+        $('ops-current-status').textContent = status || '';
+        fetchForecast();
+      }
+
+      function formatCoord(lat, lon) {
+        const ns = lat >= 0 ? 'N' : 'S';
+        const ew = lon >= 0 ? 'E' : 'W';
+        return `${Math.abs(lat).toFixed(3)}°${ns}, ${Math.abs(lon).toFixed(3)}°${ew}`;
+      }
+
+      function showError(msg) {
+        $('ops-fc-loading').style.display = 'none';
+        $('ops-fc-result').style.display = 'none';
+        const e = $('ops-fc-error');
+        e.textContent = msg;
+        e.style.display = 'block';
+      }
+
+      function showLoading() {
+        $('ops-fc-error').style.display = 'none';
+        $('ops-fc-result').style.display = 'none';
+        $('ops-fc-loading').style.display = 'block';
+      }
+
+      async function fetchForecast() {
+        const myFetch = ++fetchSeq;
+        const isStale = () => myFetch !== fetchSeq;
+        showLoading();
+        try {
+          const pointRes = await fetch(
+            `https://api.weather.gov/points/${state.lat.toFixed(4)},${state.lon.toFixed(4)}`,
+            FETCH_OPTS
+          );
+          if (isStale()) return;
+          if (!pointRes.ok) {
+            showError(pointRes.status === 404
+              ? 'Location outside NWS coverage (US only).'
+              : `NWS API error (${pointRes.status}).`);
+            return;
+          }
+          const pointJson = await pointRes.json();
+          const point = pointJson?.properties;
+          if (!point?.forecast) {
+            showError('NWS returned an unexpected response. Try a different location.');
+            return;
+          }
+          lastNwsUrl = `https://forecast.weather.gov/MapClick.php?lat=${state.lat}&lon=${state.lon}`;
+          $('ops-nws-link').href = lastNwsUrl;
+
+          const [fcRes, stationsRes] = await Promise.all([
+            fetch(point.forecast, FETCH_OPTS),
+            point.observationStations ? fetch(point.observationStations, FETCH_OPTS).catch(() => null) : null,
+          ]);
+          if (isStale()) return;
+
+          if (!fcRes.ok) { showError(`Could not fetch forecast (${fcRes.status}).`); return; }
+          const fcJson = await fcRes.json();
+          const periods = fcJson?.properties?.periods;
+          if (!Array.isArray(periods) || periods.length === 0) {
+            showError('NWS returned no forecast periods for this location.');
+            return;
+          }
+
+          const locName = point.relativeLocation?.properties;
+          const cityState = locName ? `${locName.city}, ${locName.state}` : state.name;
+          const cwa = point.cwa || '';
+          $('ops-fc-cityname').textContent = cityState;
+          $('ops-fc-cwa').textContent = cwa ? `NWS ${cwa}` : '';
+          $('ops-fc-coord').textContent = formatCoord(state.lat, state.lon);
+
+          // Current conditions — build with DOM (textContent only)
+          const currentEl = $('ops-fc-current');
+          clearChildren(currentEl);
+          let currentSummary = '';
+          if (stationsRes && stationsRes.ok) {
+            try {
+              const stations = await stationsRes.json();
+              if (isStale()) return;
+              const stationId = stations.features?.[0]?.id;
+              if (stationId) {
+                const obsRes = await fetch(`${stationId}/observations/latest`, FETCH_OPTS);
+                if (isStale()) return;
+                if (obsRes.ok) {
+                  const obs = (await obsRes.json()).properties;
+                  const tempF = cToF(obs.temperature?.value);
+                  const windMph = mpsToMph(obs.windSpeed?.value);
+                  const windDir = windCardinal(obs.windDirection?.value);
+                  const humidity = obs.relativeHumidity?.value != null ? Math.round(obs.relativeHumidity.value) : null;
+                  const desc = obs.textDescription || '';
+
+                  const line = el('div', { class: 'ops-current-line' });
+                  const parts = [];
+                  if (tempF != null) parts.push(el('strong', null, `${tempF}°F`));
+                  if (desc) parts.push(desc);
+                  if (windMph != null) parts.push(windMph === 0 ? 'calm' : `wind ${windDir} ${windMph} mph`);
+                  if (humidity != null) parts.push(`RH ${humidity}%`);
+                  parts.forEach((p, i) => {
+                    if (i > 0) line.appendChild(document.createTextNode(' · '));
+                    line.appendChild(typeof p === 'string' ? document.createTextNode(p) : p);
+                  });
+                  currentEl.appendChild(line);
+
+                  const summaryParts = [];
+                  if (tempF != null) summaryParts.push(`${tempF}°F`);
+                  if (desc) summaryParts.push(desc);
+                  if (windMph != null) summaryParts.push(windMph === 0 ? 'calm' : `wind ${windDir} ${windMph}`);
+                  currentSummary = summaryParts.join(', ');
+                }
+              }
+            } catch (_) { /* current conditions are nice-to-have */ }
+          }
+
+          // Forecast: days 1-4 (periods 0-7) full-size cards; periods 8+ compact rows.
+          const periodsEl = $('ops-fc-periods');
+          clearChildren(periodsEl);
+          const FULL_COUNT = 8;
+          const fullGrid = el('div', { class: 'ops-fc-fullgrid' });
+          const tailList = el('div', { class: 'ops-fc-taillist' });
+          periods.forEach((p, idx) => {
+            if (idx < FULL_COUNT) {
+              const card = el('div', { class: `ops-fc-period ${p.isDaytime ? 'is-day' : 'is-night'}` });
+              card.appendChild(el('div', { class: 'ops-fc-period-head' }, [
+                el('span', { class: 'ops-fc-pname' }, p.name || ''),
+                el('span', { class: 'ops-fc-ptemp' }, `${p.temperature}°${p.temperatureUnit || 'F'}`),
+              ]));
+              card.appendChild(el('div', { class: 'ops-fc-pshort' }, p.shortForecast || ''));
+              // Intentionally hide 0%/null/undefined precip — only show meaningful values.
+              const pop = p.probabilityOfPrecipitation?.value;
+              if (pop) card.appendChild(el('div', { class: 'ops-fc-ppop' }, `${pop}% precip`));
+              fullGrid.appendChild(card);
+            } else {
+              const row = el('div', { class: `ops-fc-trow ${p.isDaytime ? 'is-day' : 'is-night'}` });
+              row.appendChild(el('span', { class: 'ops-fc-tname' }, p.name || ''));
+              row.appendChild(el('span', { class: 'ops-fc-ttemp' }, `${p.temperature}°${p.temperatureUnit || 'F'}`));
+              row.appendChild(el('span', { class: 'ops-fc-tshort' }, p.shortForecast || ''));
+              const pop = p.probabilityOfPrecipitation?.value;
+              if (pop) row.appendChild(el('span', { class: 'ops-fc-tpop' }, `${pop}%`));
+              tailList.appendChild(row);
+            }
+          });
+          periodsEl.appendChild(fullGrid);
+          if (tailList.childNodes.length > 0) periodsEl.appendChild(tailList);
+
+          // Build share text (plain text — no HTML)
+          const today = periods[0];
+          const tonight = periods[1];
+          const shareLines = [`${cityState} — ${currentSummary || 'current conditions unavailable'}`];
+          if (today) shareLines.push(`${today.name}: ${today.shortForecast}, ${today.temperature}°${today.temperatureUnit}`);
+          if (tonight) shareLines.push(`${tonight.name}: ${tonight.shortForecast}, ${tonight.temperature}°${tonight.temperatureUnit}`);
+          shareLines.push(`Forecast: ${lastNwsUrl}`);
+          lastShareText = shareLines.join('\n');
+
+          $('ops-fc-loading').style.display = 'none';
+          $('ops-fc-result').style.display = 'block';
+        } catch (_) {
+          showError('Network error fetching NWS data.');
+        }
+      }
+
+      $('ops-share-btn').addEventListener('click', async () => {
+        if (!lastShareText) return;
+        const confirm = $('ops-share-confirm');
+        const showCopied = () => {
+          confirm.style.display = 'inline';
+          setTimeout(() => { confirm.style.display = 'none'; }, 2000);
+        };
+        if (navigator.share && /Mobi|Android/i.test(navigator.userAgent)) {
+          try {
+            await navigator.share({ title: `Forecast: ${state.name}`, text: lastShareText, url: lastNwsUrl });
+            return;
+          } catch (_) { /* fall through */ }
+        }
+        try {
+          await navigator.clipboard.writeText(lastShareText);
+          showCopied();
+        } catch (_) {
+          const ta = document.createElement('textarea');
+          ta.value = lastShareText;
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          let ok = false;
+          try { ok = document.execCommand('copy'); } catch (_) { /* ignored */ }
+          document.body.removeChild(ta);
+          if (ok) showCopied();
+          else $('ops-current-status').textContent = 'copy unsupported — long-press to select';
+        }
+      });
+
+      document.querySelectorAll('.loc-chip').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          setLocation(btn.dataset.lat, btn.dataset.lon, btn.dataset.name, '');
+        });
+      });
+
+      async function runSearch() {
+        const input = $('ops-search');
+        const q = input.value.trim();
+        if (!q) return;
+        const codeMatch = q.match(/^([A-Za-z]{3})$/);
+        if (codeMatch) {
+          const code = codeMatch[1].toUpperCase();
+          const ap = airports[code];
+          if (ap) {
+            setLocation(ap.lat, ap.lon, `${code} — ${ap.name}`, '');
+            return;
+          }
+        }
+        $('ops-current-status').textContent = 'searching…';
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1&countrycodes=us`,
+            FETCH_OPTS
+          );
+          if (!res.ok) {
+            $('ops-current-status').textContent = `search failed (${res.status})`;
+            return;
+          }
+          const results = await res.json();
+          if (!Array.isArray(results) || !results.length) {
+            $('ops-current-status').textContent = 'not found';
+            return;
+          }
+          setLocation(results[0].lat, results[0].lon, q, '');
+        } catch (_) {
+          $('ops-current-status').textContent = 'search failed';
+        }
+      }
+      $('ops-search-btn').addEventListener('click', runSearch);
+      $('ops-search').addEventListener('keydown', (e) => { if (e.key === 'Enter') runSearch(); });
+
+      $('ops-locate-btn').addEventListener('click', () => {
+        if (!navigator.geolocation) { $('ops-current-status').textContent = 'geolocation unsupported'; return; }
+        $('ops-current-status').textContent = 'locating…';
+        navigator.geolocation.getCurrentPosition(
+          (pos) => setLocation(pos.coords.latitude, pos.coords.longitude, 'My location', ''),
+          () => { $('ops-current-status').textContent = 'location denied'; },
+          { timeout: 10000, maximumAge: 60000 }
+        );
+      });
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => setLocation(pos.coords.latitude, pos.coords.longitude, 'My location', ''),
+          () => setLocation(opsDefault.lat, opsDefault.lon, opsDefault.name, ''),
+          { timeout: 5000, maximumAge: 300000 }
+        );
+      } else {
+        setLocation(opsDefault.lat, opsDefault.lon, opsDefault.name, '');
+      }
+
+      // ─── Live NWS active alerts panel ───
+      const SEVERE_PRIORITY = ['Extreme', 'Severe'];
+      const EVENT_ORDER = [
+        'Tornado Warning', 'Tornado Watch',
+        'Severe Thunderstorm Warning', 'Severe Thunderstorm Watch',
+        'Flash Flood Warning', 'Flash Flood Watch',
+        'Flood Warning',
+        'Hurricane Warning', 'Hurricane Watch',
+        'Tropical Storm Warning', 'Tropical Storm Watch',
+        'High Wind Warning', 'Winter Storm Warning', 'Ice Storm Warning', 'Blizzard Warning',
+        'Fire Weather Warning', 'Red Flag Warning',
+      ];
+      const EVENT_ICONS = {
+        'Tornado Warning': '🌪', 'Tornado Watch': '🌪',
+        'Severe Thunderstorm Warning': '⛈', 'Severe Thunderstorm Watch': '⛈',
+        'Flash Flood Warning': '🌊', 'Flash Flood Watch': '🌊', 'Flood Warning': '🌊',
+        'Hurricane Warning': '🌀', 'Hurricane Watch': '🌀',
+        'Tropical Storm Warning': '🌀', 'Tropical Storm Watch': '🌀',
+        'High Wind Warning': '💨',
+        'Winter Storm Warning': '❄', 'Ice Storm Warning': '❄', 'Blizzard Warning': '❄',
+        'Fire Weather Warning': '🔥', 'Red Flag Warning': '🔥',
+      };
+
+      async function loadAlerts() {
+        const statusEl = $('ops-alerts-status');
+        const listEl = $('ops-alerts-list');
+        statusEl.textContent = 'loading…';
+        clearChildren(listEl);
+        try {
+          const res = await fetch(
+            'https://api.weather.gov/alerts/active?status=actual&message_type=alert',
+            { headers: { 'Accept': 'application/geo+json' }, referrerPolicy: 'no-referrer' }
+          );
+          if (!res.ok) { statusEl.textContent = `error (${res.status})`; return; }
+          const data = await res.json();
+          const features = Array.isArray(data.features) ? data.features : [];
+
+          // Group by event type; collect affected state abbreviations
+          const groups = new Map();
+          for (const f of features) {
+            const props = f.properties || {};
+            const event = props.event || 'Other';
+            const severity = props.severity;
+            if (!SEVERE_PRIORITY.includes(severity)) continue;
+            const states = new Set();
+            // SAME codes are in geocode.SAME (county); state in senderName like "NWS Little Rock AR"
+            // Fall back to areaDesc parse
+            const area = props.areaDesc || '';
+            // Extract state codes from end of areaDesc segments: "Pulaski, AR; Saline, AR"
+            const stateMatches = area.match(/, ([A-Z]{2})(?=;|$)/g) || [];
+            for (const m of stateMatches) states.add(m.slice(2));
+            if (!groups.has(event)) groups.set(event, { count: 0, states: new Set(), worst: severity });
+            const g = groups.get(event);
+            g.count += 1;
+            for (const s of states) g.states.add(s);
+            if (severity === 'Extreme') g.worst = 'Extreme';
+          }
+
+          if (groups.size === 0) {
+            statusEl.textContent = 'updated';
+            listEl.appendChild(el('div', { class: 'ops-alerts-empty' },
+              'No active Severe or Extreme alerts nationwide right now. ✓'));
+            return;
+          }
+
+          // Sort: known priority order first, then alpha
+          const entries = Array.from(groups.entries()).sort(([a], [b]) => {
+            const ai = EVENT_ORDER.indexOf(a);
+            const bi = EVENT_ORDER.indexOf(b);
+            if (ai === -1 && bi === -1) return a.localeCompare(b);
+            if (ai === -1) return 1;
+            if (bi === -1) return -1;
+            return ai - bi;
+          });
+
+          for (const [event, info] of entries) {
+            const item = el('a', {
+              class: `ops-alert-item severity-${info.worst.toLowerCase()}`,
+              href: `https://www.weather.gov/alerts`,
+              target: '_blank',
+              rel: 'noopener noreferrer',
+            });
+            const icon = EVENT_ICONS[event] || '⚠';
+            item.appendChild(el('span', { class: 'ops-alert-icon' }, icon));
+            item.appendChild(el('span', { class: 'ops-alert-event' }, event));
+            item.appendChild(el('span', { class: 'ops-alert-count' }, `${info.count} active`));
+            if (info.states.size > 0) {
+              const stateList = Array.from(info.states).sort().join(' · ');
+              item.appendChild(el('span', { class: 'ops-alert-states' }, stateList));
+            }
+            listEl.appendChild(item);
+          }
+          statusEl.textContent = `updated ${new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
+        } catch (_) {
+          statusEl.textContent = 'fetch failed';
+        }
+      }
+      loadAlerts();
+      // Refresh every 5 minutes
+      setInterval(loadAlerts, 5 * 60 * 1000);
+    });
+  </script>
+</BaseLayout>
+
+<style is:global>
+  .ops-hero { margin-bottom: var(--space-md); }
+  .ops-hero h1 { font-size: 1.5rem; margin-bottom: var(--space-xs); }
+  .ops-sub { font-size: 0.8125rem; color: var(--color-text-muted); }
+
+  .ops-locbar {
+    position: sticky; top: 0; z-index: 10;
+    margin: 0 calc(-1 * var(--space-md)) var(--space-lg);
+    padding: var(--space-md);
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+    backdrop-filter: saturate(180%) blur(8px);
+  }
+  .locbar-row { display: flex; gap: var(--space-md); flex-wrap: wrap; align-items: center; }
+  .locbar-search {
+    flex: 1 1 320px;
+    display: flex; align-items: center; gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+  }
+  .locbar-search input {
+    flex: 1; border: none; outline: none;
+    font-family: var(--font-sans); font-size: 0.875rem;
+    color: var(--color-text); background: transparent;
+    min-width: 0;
+  }
+  .locbar-search button {
+    padding: var(--space-xs) var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans); font-size: 0.8125rem; font-weight: 600;
+    cursor: pointer;
+  }
+  .locbar-search button:hover { background: var(--color-border); }
+  #ops-locate-btn { padding: var(--space-xs); display: inline-flex; align-items: center; justify-content: center; }
+  .locbar-chips { display: flex; gap: var(--space-xs); flex-wrap: wrap; }
+  .loc-chip {
+    padding: var(--space-xs) var(--space-md);
+    font-family: var(--font-sans); font-size: 0.75rem; font-weight: 600;
+    color: var(--color-accent); background: var(--color-accent-light);
+    border: 1px solid var(--color-info-border); border-radius: 100px;
+    cursor: pointer;
+  }
+  .loc-chip:hover { background: var(--color-bg); border-color: var(--color-accent); }
+  .locbar-current {
+    margin-top: var(--space-sm);
+    display: flex; gap: var(--space-sm); flex-wrap: wrap; align-items: baseline;
+    font-size: 0.8125rem;
+  }
+  .loc-now-label { color: var(--color-text-muted); text-transform: uppercase; font-size: 0.6875rem; letter-spacing: 0.05em; }
+  .loc-now-name { font-weight: 600; color: var(--color-text); }
+  .loc-now-coord { color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
+  .loc-now-status { color: var(--color-accent); font-style: italic; }
+
+  .ops-section {
+    margin-bottom: var(--space-xl);
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-bg);
+  }
+  .ops-section-h {
+    font-size: 1rem; font-weight: 700;
+    margin-bottom: var(--space-md);
+    display: flex; align-items: center; gap: var(--space-sm);
+  }
+  .ops-section-h i { color: var(--color-accent); }
+  .ops-section-sub {
+    margin-top: calc(-1 * var(--space-sm));
+    margin-bottom: var(--space-md);
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+  }
+
+  /* ─── Embed cards (img or iframe) ─── */
+  .ops-embed-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+  }
+  .ops-embed-grid.two-col { grid-template-columns: 1fr; }
+  @media (min-width: 768px) {
+    .ops-embed-grid.two-col { grid-template-columns: 1fr 1fr; }
+  }
+  /* When images have varying aspect ratios, normalize via a fixed-aspect wrapper */
+  .ops-embed-grid.align-rows { align-items: stretch; }
+  .ops-embed-grid.align-rows .ops-embed { display: flex; flex-direction: column; }
+  .ops-embed-img-wrap {
+    aspect-ratio: 16 / 9;
+    background: #fff;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ops-embed-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  .ops-embed {
+    margin: 0 0 var(--space-md) 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--color-surface);
+  }
+  .ops-embed:last-child { margin-bottom: 0; }
+  .ops-embed img {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: #fff; /* SPC/NHC images have white bg; prevent dark-mode flash */
+  }
+  .ops-embed iframe {
+    display: block;
+    width: 100%;
+    height: 420px;
+    border: 0;
+    background: #fff;
+  }
+  .ops-embed.tall iframe { height: 580px; }
+  .ops-embed.big img { max-height: 640px; object-fit: contain; }
+  .ops-embed figcaption {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-bg);
+    border-top: 1px solid var(--color-border);
+    font-size: 0.8125rem;
+    flex-wrap: nowrap;
+  }
+  .ops-embed figcaption strong {
+    font-weight: 600;
+    color: var(--color-text);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ops-embed figcaption a {
+    color: var(--color-link);
+    text-decoration: none;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .ops-embed figcaption a:hover { text-decoration: underline; }
+
+  /* Live NWS alerts panel */
+  .ops-alerts {
+    margin-top: var(--space-md);
+    padding: var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+  }
+  .ops-alerts-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: var(--space-sm);
+    font-size: 0.875rem;
+  }
+  .ops-alerts-status {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+  .ops-alerts-list { display: flex; flex-direction: column; gap: var(--space-xs); }
+  .ops-alerts-empty {
+    padding: var(--space-sm);
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+  }
+  .ops-alert-item {
+    display: grid;
+    grid-template-columns: 24px 1fr auto auto;
+    gap: var(--space-sm);
+    align-items: baseline;
+    padding: var(--space-xs) var(--space-md);
+    border-left: 3px solid var(--color-border);
+    background: var(--color-bg);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: inherit;
+    font-size: 0.8125rem;
+    transition: background 0.15s;
+  }
+  .ops-alert-item:hover { background: var(--color-surface); }
+  .ops-alert-item.severity-extreme { border-left-color: var(--color-emergency, #c0392b); }
+  .ops-alert-item.severity-severe { border-left-color: var(--color-accent, #d97706); }
+  .ops-alert-icon { font-size: 1.125rem; }
+  .ops-alert-event { font-weight: 600; color: var(--color-text); }
+  .ops-alert-count {
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+  }
+  .ops-alert-states {
+    color: var(--color-text-muted);
+    font-family: ui-monospace, monospace;
+    font-size: 0.6875rem;
+    max-width: 280px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  @media (max-width: 600px) {
+    .ops-alert-item { grid-template-columns: 24px 1fr auto; }
+    .ops-alert-states { grid-column: 2 / -1; max-width: none; white-space: normal; }
+  }
+
+  /* Compact link row under embedded sections */
+  .ops-link-row {
+    margin-top: var(--space-md);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm) var(--space-md);
+    padding-top: var(--space-md);
+    border-top: 1px dashed var(--color-border);
+    font-size: 0.8125rem;
+  }
+  .ops-link-row a {
+    color: var(--color-link);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .ops-link-row a:hover { text-decoration: underline; }
+
+  .ops-loading { padding: var(--space-md); color: var(--color-text-secondary); font-size: 0.875rem; }
+  .ops-error {
+    padding: var(--space-md);
+    background: var(--color-emergency-bg);
+    border: 1px solid var(--color-emergency-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-emergency); font-size: 0.875rem;
+  }
+  .ops-fc-header h3 { font-size: 1.125rem; margin-bottom: var(--space-xs); }
+  .ops-fc-meta { display: flex; gap: var(--space-md); font-size: 0.75rem; color: var(--color-text-muted); }
+  .ops-current-line {
+    margin: var(--space-sm) 0;
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-surface);
+    border-radius: var(--radius-sm);
+    font-size: 0.9375rem;
+  }
+  .ops-current-line strong { font-size: 1.25rem; }
+  .ops-fc-actions { display: flex; gap: var(--space-md); align-items: center; margin: var(--space-md) 0; flex-wrap: wrap; }
+  .ops-fc-nwslink { color: var(--color-link); text-decoration: none; font-size: 0.8125rem; font-weight: 500; }
+  .ops-fc-nwslink:hover { text-decoration: underline; }
+  .ops-fc-periods { display: flex; flex-direction: column; gap: var(--space-md); }
+  .ops-fc-fullgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--space-sm);
+  }
+  .ops-fc-period {
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+  }
+  .ops-fc-period.is-day { background: var(--color-bg); }
+  .ops-fc-period.is-night { background: var(--color-surface); }
+  .ops-fc-period-head { display: flex; justify-content: space-between; align-items: baseline; }
+  .ops-fc-pname { font-weight: 600; font-size: 0.8125rem; }
+  .ops-fc-ptemp { font-weight: 700; font-size: 0.9375rem; }
+  .ops-fc-pshort { font-size: 0.75rem; color: var(--color-text-secondary); margin-top: var(--space-xs); }
+  .ops-fc-ppop { font-size: 0.6875rem; color: var(--color-accent); margin-top: var(--space-xs); }
+
+  /* Compact one-line rows for days 5+ */
+  .ops-fc-taillist {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  .ops-fc-trow {
+    display: grid;
+    grid-template-columns: minmax(110px, 1fr) 60px 2fr auto;
+    gap: var(--space-sm);
+    align-items: baseline;
+    padding: var(--space-xs) var(--space-md);
+    font-size: 0.75rem;
+    border-top: 1px solid var(--color-border);
+  }
+  .ops-fc-trow:first-child { border-top: 0; }
+  .ops-fc-trow.is-day { background: var(--color-bg); }
+  .ops-fc-trow.is-night { background: var(--color-surface); }
+  .ops-fc-tname { font-weight: 600; color: var(--color-text); }
+  .ops-fc-ttemp { font-weight: 700; color: var(--color-text); text-align: right; }
+  .ops-fc-tshort { color: var(--color-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ops-fc-tpop { color: var(--color-accent); font-weight: 600; }
+  @media (max-width: 600px) {
+    .ops-fc-trow { grid-template-columns: 1fr auto; gap: var(--space-xs); }
+    .ops-fc-tshort { grid-column: 1 / -1; white-space: normal; }
+    .ops-fc-tpop { grid-column: 2 / 3; }
+  }
+
+  .ops-grid { display: grid; grid-template-columns: 1fr; gap: var(--space-lg); }
+  @media (min-width: 768px) {
+    .ops-grid { grid-template-columns: 1fr 1fr; }
+    .ops-grid .ops-section { margin-bottom: 0; }
+  }
+
+  .ops-link-list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-xs); }
+  .ops-link-list-grid {
+    margin-top: var(--space-md);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 600px) {
+    .ops-link-list-grid { grid-template-columns: 1fr 1fr; gap: var(--space-sm); }
+  }
+  .ops-link-list li a {
+    display: block;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    background: var(--color-surface);
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .ops-link-list li a:hover { border-color: var(--color-accent); background: var(--color-bg); }
+  .ops-link-list li a strong { display: block; color: var(--color-text); font-size: 0.875rem; font-weight: 600; }
+  .ops-link-list li a span { display: block; color: var(--color-text-muted); font-size: 0.75rem; margin-top: 2px; }
+
+  .ops-aviation-quick {
+    margin-bottom: var(--space-md);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px dashed var(--color-border);
+    font-size: 0.8125rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+  .aviation-airport {
+    display: inline-flex; gap: var(--space-xs); align-items: center;
+    margin-right: var(--space-md); margin-bottom: var(--space-xs);
+  }
+  .aviation-airport strong { color: var(--color-text); font-family: ui-monospace, monospace; }
+  .aviation-airport a {
+    padding: 2px var(--space-xs);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--color-link);
+    font-size: 0.6875rem; font-weight: 600;
+  }
+  .aviation-airport a:hover { background: var(--color-accent-light); }
+
+  @media (max-width: 600px) {
+    .ops-locbar { margin: 0 calc(-1 * var(--space-sm)) var(--space-md); padding: var(--space-sm); }
+    .locbar-search { flex: 1 1 100%; }
+  }
+</style>

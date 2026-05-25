@@ -1,0 +1,84 @@
+{
+  "embeds": {
+    "nationalWarnings": {
+      "title": "Nationwide watches & warnings",
+      "img": "https://forecast.weather.gov/wwamap/png/US.png",
+      "alt": "NWS nationwide watches and warnings map",
+      "source": "weather.gov",
+      "sourceUrl": "https://www.weather.gov/alerts"
+    },
+    "spcWatches": {
+      "title": "Active SPC watches",
+      "frame": "https://www.spc.noaa.gov/products/watch/",
+      "source": "spc.noaa.gov",
+      "sourceUrl": "https://www.spc.noaa.gov/products/watch/"
+    },
+    "spcDay1": {
+      "title": "SPC Day 1 outlook",
+      "img": "https://www.spc.noaa.gov/products/outlook/day1otlk.png",
+      "alt": "SPC Day 1 convective outlook",
+      "linkUrl": "https://www.spc.noaa.gov/products/outlook/day1otlk.html"
+    },
+    "spcDay2": {
+      "title": "SPC Day 2 outlook",
+      "img": "https://www.spc.noaa.gov/products/outlook/day2otlk.png",
+      "alt": "SPC Day 2 convective outlook",
+      "linkUrl": "https://www.spc.noaa.gov/products/outlook/day2otlk.html"
+    },
+    "radarCONUS": {
+      "title": "National radar",
+      "img": "https://radar.weather.gov/ridge/standard/CONUS_loop.gif",
+      "alt": "NWS CONUS national radar loop",
+      "linkUrl": "https://radar.weather.gov/region/conus"
+    },
+    "nhcAtl7d": {
+      "title": "NHC Atlantic 7-day outlook",
+      "img": "https://www.nhc.noaa.gov/xgtwo/two_atl_7d0.png",
+      "alt": "NHC Atlantic 7-day tropical weather outlook",
+      "linkUrl": "https://www.nhc.noaa.gov/gtwo.php?basin=atlc&fdays=7"
+    },
+    "nhcAtl2d": {
+      "title": "NHC Atlantic 2-day outlook",
+      "img": "https://www.nhc.noaa.gov/xgtwo/two_atl_2d0.png",
+      "alt": "NHC Atlantic 2-day tropical weather outlook",
+      "linkUrl": "https://www.nhc.noaa.gov/gtwo.php?basin=atlc&fdays=2"
+    },
+    "nhcPac7d": {
+      "title": "NHC E. Pacific 7-day outlook",
+      "img": "https://www.nhc.noaa.gov/xgtwo/two_pac_7d0.png",
+      "alt": "NHC eastern Pacific 7-day tropical weather outlook",
+      "linkUrl": "https://www.nhc.noaa.gov/gtwo.php?basin=epac&fdays=7"
+    }
+  },
+  "severe": {
+    "title": "SPC — drill-down",
+    "icon": "fa-bolt",
+    "links": [
+      { "label": "Day 1 outlook (national)", "url": "https://www.spc.noaa.gov/products/outlook/day1otlk.html", "desc": "Today's full national convective outlook + discussion" },
+      { "label": "Day 2 outlook (national)", "url": "https://www.spc.noaa.gov/products/outlook/day2otlk.html", "desc": "Tomorrow's full national convective outlook + discussion" },
+      { "label": "Mesoscale discussions", "url": "https://www.spc.noaa.gov/products/md/", "desc": "Real-time analysis of developing severe weather" },
+      { "label": "Today's storm reports", "url": "https://www.spc.noaa.gov/climo/reports/today.html", "desc": "Tornado, hail, wind reports filed today" },
+      { "label": "Mesoanalysis", "url": "https://www.spc.noaa.gov/exper/mesoanalysis/", "desc": "Real-time atmospheric parameters" },
+      { "label": "Fire weather outlook", "url": "https://www.spc.noaa.gov/products/fire_wx/", "desc": "Critical/extreme fire weather risk" }
+    ]
+  },
+  "lzk": {
+    "title": "NWS LZK — Little Rock office",
+    "icon": "fa-tower-broadcast",
+    "links": [
+      { "label": "Area Forecast Discussion", "url": "https://forecast.weather.gov/product.php?site=NWS&issuedby=LZK&product=AFD", "desc": "Forecaster's reasoning — the most useful read" },
+      { "label": "Hazardous Weather Outlook", "url": "https://forecast.weather.gov/product.php?site=NWS&issuedby=LZK&product=HWO", "desc": "Hazards expected over the next 7 days" },
+      { "label": "LZK warnings (current)", "url": "https://www.weather.gov/lzk/warnings", "desc": "Active warnings in LZK county warning area" },
+      { "label": "LZK office home", "url": "https://www.weather.gov/lzk/", "desc": "All LZK products + briefings" }
+    ]
+  },
+  "aviation": {
+    "title": "Aviation (AWC) — quick drill-downs",
+    "icon": "fa-plane",
+    "links": [
+      { "label": "Aviation Weather Center", "url": "https://aviationweather.gov/", "desc": "All AWC products" },
+      { "label": "SIGMETs / G-AIRMETs", "url": "https://aviationweather.gov/gairmet/", "desc": "Significant + graphical airmen's met advisories" },
+      { "label": "Graphical Forecast (GFA)", "url": "https://aviationweather.gov/gfa/", "desc": "Layered aviation forecast — turb/icing/ceilings/wind" }
+    ]
+  }
+}

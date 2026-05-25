@@ -8,7 +8,14 @@
     "suggestionsUrl": "https://tally.so/r/7Rda66?source=arwx",
     "kofiUrl": "https://ko-fi.com/keithcrawford",
     "authorName": "Keith Crawford",
-    "authorUrl": "https://keithcrawford.me"
+    "authorUrl": "https://keithcrawford.me",
+    "opsDefault": { "name": "Little Rock, AR", "lat": 34.7465, "lon": -92.2896 },
+    "opsChips": [
+      { "name": "Little Rock, AR", "lat": 34.7465, "lon": -92.2896 },
+      { "name": "Dallas, TX", "lat": 32.7767, "lon": -96.797 },
+      { "name": "Soho, NYC", "lat": 40.7233, "lon": -74.003 }
+    ],
+    "opsAviationDefaults": ["LIT", "DAL", "LGA"]
   },
   "pages": {
     "home": {

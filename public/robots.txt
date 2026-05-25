@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /ops/
+Disallow: /ops
 
 Sitemap: https://arwx.info/sitemap-index.xml
