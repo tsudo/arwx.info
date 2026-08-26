@@ -4,6 +4,10 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  devalue: ^5.8.1
+  svgo: ^4.0.2
+
 importers:
 
   .:
