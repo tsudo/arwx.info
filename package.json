@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "png-to-ico": "^3.0.2",
-    "sharp": "^0.35.3"
+    "sharp": "^0.35.4"
   },
   "pnpm": {
     "overrides": {
