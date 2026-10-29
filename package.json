@@ -21,7 +21,8 @@
   "pnpm": {
     "overrides": {
       "devalue": "^5.8.1",
-      "svgo": "^4.0.2"
+      "svgo": "^4.0.2",
+      "undici": "^8.12.2"
     }
   }
 }
